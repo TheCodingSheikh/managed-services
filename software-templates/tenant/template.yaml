@@ -58,9 +58,8 @@ spec:
                   - View
 
   steps:
-    - $yaml: https://github.com/thecodingsheikh/managed-services/shared/steps/fetch-template.yaml
-
-    - $yaml: https://github.com/thecodingsheikh/managed-services/shared/steps/catalog-register.yaml
+    - $yaml: https://github.com/thecodingsheikh/managed-services/software-templates/shared/steps/fetch-template.yaml
+    - $yaml: https://github.com/thecodingsheikh/managed-services/software-templates/shared/steps/catalog-register.yaml
 
   output:
     links:
