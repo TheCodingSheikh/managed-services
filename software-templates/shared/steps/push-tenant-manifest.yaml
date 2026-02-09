@@ -1,0 +1,11 @@
+id: push-tenant-manifest
+name: Push Tenant Manifest
+action: github:repo:push
+input:
+  repoUrl: github.com?owner=thecodingsheikh&repo=managed-services
+  branchName: main
+  sourcePath: ./output/manifest.yaml
+  targetPath: releases/${{ parameters.name }}/manifest.yaml
+  commitMessage: "create ${{ parameters.name }} tenant"
+  gitAuthorName: ${{ user.entity.metadata.name }}
+  gitAuthorEmail: backstage@thecodingsheikh.io

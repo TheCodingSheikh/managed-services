@@ -1,0 +1,11 @@
+id: push-service-manifest
+name: Push Service Manifest
+action: github:repo:push
+input:
+  repoUrl: github.com?owner=thecodingsheikh&repo=managed-services
+  branchName: main
+  sourcePath: ./output/manifest.yaml
+  targetPath: releases/${{ parameters.tenant }}/${{ parameters.serviceType }}/${{ parameters.name }}.yaml
+  commitMessage: "create ${{ parameters.name }} ${{ parameters.serviceType }} in ${{ parameters.tenant }} tenant"
+  gitAuthorName: ${{ user.entity.metadata.name }}
+  gitAuthorEmail: backstage@thecodingsheikh.io

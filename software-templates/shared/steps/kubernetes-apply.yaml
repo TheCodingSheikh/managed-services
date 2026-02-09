@@ -1,11 +1,3 @@
-# Kubernetes Apply Step
-# Applies manifests to Kubernetes cluster
-#
-# Usage in template.yaml:
-#   steps:
-#     - $yaml: ../shared/steps/kubernetes-apply.yaml
-#
-# Or copy and customize:
 id: apply-manifest
 name: Apply to Kubernetes
 action: kubernetes:apply

@@ -18,6 +18,11 @@ spec:
         - name
         - owners
       properties:
+        serviceType:
+          type: string
+          default: tenant
+          # Must be hidden
+          ui:widget: hidden
         name:
           title: Tenant Name
           type: string
@@ -52,6 +57,10 @@ spec:
                 title: Subject
                 type: string
                 description: Name of the user or group
+                ui:field: OwnerPicker
+                ui:options:
+                  catalogFilter:
+                    kind: [Group, User]
               role:
                 title: Role
                 type: string
@@ -69,12 +78,13 @@ spec:
   steps:
     - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-template.yaml
     - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/catalog-register.yaml
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/push-tenant-manifest.yaml
 
   output:
     links:
-      - title: View Tenant in Catalog
+      - title: View in Catalog
         icon: catalog
-        url: "/catalog/default/component/${{ parameters.name }}"
+        url: ${{ steps['register-catalog'].output.catalogInfoUrl }}
     text:
       - title: Tenant Created
         content: |
