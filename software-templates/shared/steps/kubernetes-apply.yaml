@@ -1,6 +1,0 @@
-id: apply-manifest
-name: Apply to Kubernetes
-action: kubernetes:apply
-input:
-  manifestPath: ./output
-  namespaced: true

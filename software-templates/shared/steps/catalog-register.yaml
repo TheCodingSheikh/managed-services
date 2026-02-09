@@ -1,5 +1,0 @@
-id: register-catalog
-name: Register in Catalog  
-action: catalog:register
-input:
-  catalogInfoUrl: ./output/catalog-info.yaml

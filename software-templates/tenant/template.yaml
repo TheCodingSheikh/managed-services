@@ -77,15 +77,10 @@ spec:
 
   steps:
     - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-template.yaml
-    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/catalog-register.yaml
     - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/push-tenant-manifest.yaml
 
   output:
-    links:
-      - title: View in Catalog
-        icon: catalog
-        url: ${{ steps['register-catalog'].output.catalogInfoUrl }}
     text:
       - title: Tenant Created
         content: |
-          Your tenant **${{ parameters.name }}** has been created successfully
+          Your tenant is being created. You can view it in the catalog once it is ready.

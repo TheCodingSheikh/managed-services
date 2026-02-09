@@ -2,6 +2,16 @@ apiVersion: managedservices.thecodingsheikh.io/v1alpha1
 kind: Tenant
 metadata:
   name: ${{ values.params.name }}
+  annotations:
+    lab.backstage.io/add-to-catalog: "true"
+    lab.backstage.io/owner: ${{ values.params.owners[0].subject }}
+    lab.backstage.io/system-type: app
+    lab.backstage.io/system: tenant
+    lab.backstage.io/component-type: service
+    lab.backstage.io/lifecycle: managed
+    lab.backstage.io/links: string
+    lab.backstage.io/title: ${{ values.params.name | replace("-", " ") | title }} Tenant
+    lab.backstage.io/name: ${{ values.params.name }}-tenant
 spec:
   values:
     name: ${{ values.params.name }}
