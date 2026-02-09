@@ -1,8 +1,9 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: ${{ values.params.name }}
+  name: ${{ values.params.name }}-tenant
   description: Managed Tenant - ${{ values.params.name }}
+  title: ${{ values.params.name | replace("-", " ") | title }} Tenant
   tags:
     - tenant
     - managed-service
