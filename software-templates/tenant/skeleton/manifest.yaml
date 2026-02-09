@@ -17,6 +17,6 @@ spec:
     name: ${{ values.params.name }}
     owners:
       {%- for owner in values.params.owners %}
-      - subject: {{ owner.subject | dump }}
-        role: {{ owner.role }}
+      - subject: ${{ owner.subject | dump }}
+        role: ${{ owner.role }}
       {%- endfor %}

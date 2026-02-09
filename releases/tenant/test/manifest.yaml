@@ -16,5 +16,5 @@ spec:
   values:
     name: test
     owners:
-      - subject: {{ owner.subject | dump }}
-        role: {{ owner.role }}
+      - subject: test
+        role: admin
