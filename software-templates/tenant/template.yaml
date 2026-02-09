@@ -1,0 +1,73 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: tenant
+  title: Managed Tenant
+  description: Create a tenant
+  tags:
+    - kubernetes
+    - managed-service
+spec:
+  owner: platform-team
+  type: resource
+
+  # Parameters reference charts/tenant/values.schema.json structure
+  parameters:
+    - title: Tenant Configuration
+      required:
+        - name
+        - owners
+      properties:
+        name:
+          title: Tenant Name
+          type: string
+          description: Unique name for the tenant (lowercase, alphanumeric with dashes)
+          pattern: "^[a-z][a-z0-9-]*$"
+          minLength: 1
+          maxLength: 63
+          ui:autofocus: true
+        owners:
+          title: Tenant Owners
+          type: array
+          description: List of tenant owners (Can be changed later)
+          minItems: 1
+          ui:options:
+            orderable: true
+          items:
+            type: object
+            required:
+              - subject
+              - role
+            properties:
+              subject:
+                title: Subject
+                type: string
+                description: Name of the user or group
+              role:
+                title: Role
+                type: string
+                description: Role to assign
+                default: view
+                enum:
+                  - admin
+                  - edit
+                  - view
+                enumNames:
+                  - Admin
+                  - Edit
+                  - View
+
+  steps:
+    - $yaml: https://github.com/thecodingsheikh/managed-services/shared/steps/fetch-template.yaml
+
+    - $yaml: https://github.com/thecodingsheikh/managed-services/shared/steps/catalog-register.yaml
+
+  output:
+    links:
+      - title: View Tenant in Catalog
+        icon: catalog
+        url: "/catalog/default/component/${{ parameters.name }}"
+    text:
+      - title: Tenant Created
+        content: |
+          Your tenant **${{ parameters.name }}** has been created successfully

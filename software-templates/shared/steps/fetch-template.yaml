@@ -1,0 +1,16 @@
+# Fetch Template Step
+# Scaffolds files from a skeleton directory using Nunjucks templating
+#
+# Usage in template.yaml:
+#   steps:
+#     - $yaml: ../shared/steps/fetch-template.yaml
+#
+# Or copy and customize:
+id: fetch-skeleton
+name: Scaffold Project Files
+action: fetch:template
+input:
+  url: ./skeleton
+  targetPath: ./output
+  values:
+    params: ${{ parameters }}

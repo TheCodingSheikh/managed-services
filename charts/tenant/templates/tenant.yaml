@@ -1,0 +1,27 @@
+apiVersion: capsule.clastix.io/v1beta2
+kind: Tenant
+metadata:
+  name: {{ .Values.name }}
+  labels:
+    {{- include "lib.labels" . | nindent 4 }}
+  annotations:
+    {{- include "lib.argocdAnnotations" . | nindent 4 }}
+spec:
+  forceTenantPrefix: true
+  owners:
+    {{- range .Values.owners }}
+    - name: {{ .subject | quote }}
+      kind: Group
+      clusterRoles:
+        - {{ .role }}
+        {{- if eq .role "admin" }}
+        - capsule-namespace-deleter
+        {{- end }}
+    {{- end }}
+  namespaceOptions:
+    additionalMetadataList:
+      - labels:
+          pod-security.kubernetes.io/enforce: baseline
+          capsule.clastix.io/tenant-quota: large
+  ingressOptions:
+    hostnameCollisionScope: Cluster

@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Tenant Configuration",
+  "description": "Configuration for Tenant resource",
+  "type": "object",
+  "required": ["name", "owners"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Tenant name",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "minLength": 1,
+      "maxLength": 63
+    },
+    "owners": {
+      "type": "array",
+      "description": "List of tenant owners",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["subject", "role"],
+        "properties": {
+          "subject": {
+            "type": "string",
+            "description": "Owner name (user or group name)"
+          },
+          "role": {
+            "type": "string",
+            "description": "Role to assign (admin, edit, or view)",
+            "enum": ["admin", "edit", "view"]
+          }
+        }
+      }
+    }
+  }
+}

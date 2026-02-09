@@ -1,0 +1,12 @@
+apiVersion: managedservices.thecodingsheikh.io/v1alpha1
+kind: Tenant
+metadata:
+  name: ${{ values.params.name }}
+spec:
+  values:
+    name: ${{ values.params.name }}
+    owners:
+      {%- for owner in values.params.owners %}
+      - subject: {{ owner.subject | dump }}
+        role: {{ owner.role }}
+      {%- endfor %}

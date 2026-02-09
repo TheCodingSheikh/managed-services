@@ -1,0 +1,13 @@
+# Catalog Register Step
+# Registers resources in Backstage catalog
+#
+# Usage in template.yaml:
+#   steps:
+#     - $yaml: ../shared/steps/catalog-register.yaml
+#
+# Or copy and customize:
+id: register-catalog
+name: Register in Catalog
+action: catalog:register
+input:
+  catalogInfoPath: ./output/catalog-info.yaml

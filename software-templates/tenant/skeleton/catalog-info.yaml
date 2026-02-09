@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.params.name }}
+  description: Managed Tenant - ${{ values.params.name }}
+  tags:
+    - tenant
+    - managed-service
+spec:
+  type: managed-service
+  owner: platform-team
+  system: tenant
