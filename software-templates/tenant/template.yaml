@@ -26,6 +26,15 @@ spec:
           minLength: 1
           maxLength: 63
           ui:autofocus: true
+        nameValidator:
+          type: string
+          ui:field: ScaffolderFieldValidator
+          ui:options:
+            watchField: name
+            validationType: api
+            apiPath: proxy/k8s/managedservices.thecodingsheikh.io/v1alpha1/namespaces/managed-services/tenants
+            jmesPath: "items[?metadata.name == '{{ value }}']"
+            errorMessage: "Tenant '{{ value }}' is already in use"
         owners:
           title: Tenant Owners
           type: array

@@ -12,16 +12,16 @@ spec:
   resources:
     - id: release
       readyWhen:
-        - ${release.status.conditions[?type == "Ready"].status == "True"}
+        - ${release.status.conditions.exists(c, c.type == 'Ready' && c.status == 'True')}
       template:
         apiVersion: helm.toolkit.fluxcd.io/v2beta2
         kind: HelmRelease
         metadata:
           name: ${schema.spec.values.name}
-          namespace: flux
+          namespace: managed-services
         spec:
           releaseName: ${schema.spec.values.name}
-          targetNamespace: flux
+          targetNamespace: managed-services
           chart:
             spec:
               reconcileStrategy: Revision
@@ -29,7 +29,7 @@ spec:
               sourceRef:
                 kind: GitRepository
                 name: managed-services
-                namespace: flux
+                namespace: managed-services
               interval: 5m
           interval: 15m
           values: ${schema.spec.values}

@@ -2,7 +2,7 @@ apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
   name: managed-services
-  namespace: flux
+  namespace: managed-services
 spec:
   interval: 10m
   ref:
