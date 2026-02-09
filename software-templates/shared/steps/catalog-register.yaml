@@ -2,4 +2,4 @@ id: register-catalog
 name: Register in Catalog  
 action: catalog:register
 input:
-  catalogInfoUrl: ${{ steps['fetch-skeleton'].output.targetPath }}/catalog-info.yaml
+  catalogInfoUrl: ./output/catalog-info.yaml
