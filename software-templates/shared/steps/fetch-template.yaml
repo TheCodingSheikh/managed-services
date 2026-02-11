@@ -2,7 +2,7 @@ id: fetch-skeleton
 name: Scaffold Project Files
 action: fetch:template
 input:
-  url: ./skeleton
+  url: ./shared/skeleton
   targetPath: ./output
   values:
     params: ${{ parameters }}
