@@ -18,10 +18,19 @@ spec:
         kind: HelmRelease
         metadata:
           name: ${schema.spec.values.name}
-          namespace: managed-services
+          namespace: ${schema.metadata.namespace}
+          ownerReferences:
+            - apiVersion: ${schema.apiVersion}
+              kind: ${schema.kind}
+              name: ${schema.metadata.name}
+              uid: ${schema.metadata.uid}
+              blockOwnerDeletion: true
+              controller: false
+          annotations:
+            argocd.argoproj.io/tracking-id: ${schema.metadata.?annotations["argocd.argoproj.io/tracking-id"]}
         spec:
           releaseName: ${schema.spec.values.name}
-          targetNamespace: managed-services
+          targetNamespace: ${schema.metadata.namespace}
           chart:
             spec:
               reconcileStrategy: Revision
