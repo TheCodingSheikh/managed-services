@@ -52,22 +52,26 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Add ownerReference to the resource
 */}}
 {{- define "lib.ownerReference" -}}
-{{- $existingService := (lookup "helm.toolkit.fluxcd.io/v2beta2" "HelmRelease" .Release.Namespace .Release.Name) -}}
-    ownerReferences:
-    - apiVersion: {{ $existingService.apiVersion }}
-        kind: {{ $existingService.kind }}
-        name: {{ $existingService.metadata.name }}
-        uid: {{ $existingService.metadata.uid }}
-        blockOwnerDeletion: true
-        controller: false
+  {{- $existingHR := (lookup "helm.toolkit.fluxcd.io/v2beta2" "HelmRelease" .Release.Namespace .Release.Name) -}}
+  {{- if $existingHR }}
+ownerReferences:
+  - apiVersion: {{ $existingHR.apiVersion }}
+    kind: {{ $existingHR.kind }}
+    name: {{ $existingHR.metadata.name }}
+    uid: {{ $existingHR.metadata.uid }}
+    blockOwnerDeletion: true
+    controller: false
+  {{- end -}}
 {{- end -}}
-
 
 {{/*
 ArgoCD tracking annotation
 */}}
 {{- define "lib.argocdAnnotations" -}}
-{{- $existingService := (lookup "helm.toolkit.fluxcd.io/v2beta2" "HelmRelease" .Release.Namespace .Release.Name) -}}
-    argocd.argoproj.io/tracking-id: {{ index $existingService.metadata.annotations "argocd.argoproj.io/tracking-id" }}
-{{- end }}
+  {{- $existingService := (lookup "helm.toolkit.fluxcd.io/v2beta2" "HelmRelease" .Release.Namespace .Release.Name) -}}
+    {{- if $existingService }}
+argocd.argoproj.io/tracking-id: {{ index $existingService.metadata.annotations "argocd.argoproj.io/tracking-id" }}
+  {{- end -}}
+{{- end -}}
+
 
