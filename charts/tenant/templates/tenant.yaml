@@ -4,7 +4,6 @@ metadata:
   name: {{ .Release.Name }}
   labels:
     {{- include "lib.labels" . | nindent 4 }}
-  annotations:
     {{- include "lib.argocdlabels" . | nindent 4 }}
 spec:
   forceTenantPrefix: true

@@ -53,5 +53,5 @@ ArgoCD tracking label
 */}}
 {{- define "lib.argocdlabels" -}}
 app.kubernetes.io/instance: {{ .Release.Name | quote }}
-argocd.argoproj.io/tracking-id: {{ .Release.Name | quote }}-
+argocd.argoproj.io/instance: {{ .Release.Name | quote }}
 {{- end }}
