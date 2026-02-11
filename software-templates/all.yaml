@@ -5,4 +5,5 @@ metadata:
   description: Collection of all the managed services software templates
 spec:
   targets:
-    - ./tenant/template.yaml
+    - ./tenant.yaml
+    - ./postgres.yaml

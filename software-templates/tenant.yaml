@@ -1,0 +1,87 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: tenant
+  title: Managed Tenant
+  description: Create a managed tenant
+  tags:
+    - tenant
+    - kubernetes
+    - managed-service
+spec:
+  owner: platform-team
+  type: service
+
+  # Parameters reference charts/<service>/values.schema.json structure
+  parameters:
+    - title: Tenant Configuration
+      required:
+        - tenant
+        - owners
+      properties:
+        serviceType:
+          type: string
+          default: tenant
+          # Must be hidden
+          ui:widget: hidden
+        tenant:
+          title: Tenant Name
+          type: string
+          description: Unique name for the tenant (lowercase, alphanumeric with dashes)
+          pattern: "^[a-z][a-z0-9-]*$"
+          minLength: 1
+          maxLength: 63
+          ui:autofocus: true
+        tenantValidator:
+          type: string
+          ui:field: ScaffolderFieldValidator
+          ui:options:
+            watchField: tenant
+            validationType: api
+            apiPath: proxy/k8s/managedservices.thecodingsheikh.io/v1alpha1/tenants
+            jmesPath: "items[?metadata.name == '{{ value }}']"
+            errorMessage: "Tenant '{{ value }}' is already in use"
+        owners:
+          title: Tenant Owners
+          type: array
+          description: List of tenant owners (Can be changed later)
+          minItems: 1
+          ui:options:
+            orderable: true
+          items:
+            type: object
+            required:
+              - subject
+              - role
+            properties:
+              subject:
+                title: Subject
+                type: string
+                description: Name of the user or group
+                ui:field: OwnerPicker
+                ui:options:
+                  catalogFilter:
+                    kind: [Group, User]
+              role:
+                title: Role
+                type: string
+                description: Role to assign
+                default: view
+                enum:
+                  - admin
+                  - edit
+                  - view
+                enumNames:
+                  - Admin
+                  - Edit
+                  - View
+
+  steps:
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-template.yaml
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/push-manifest.yaml
+
+  output:
+    text:
+      - title: Tenant Created
+        content: |
+          Your tenant is being created. You can view it in the catalog once it is ready.
