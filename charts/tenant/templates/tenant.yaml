@@ -1,7 +1,7 @@
 apiVersion: capsule.clastix.io/v1beta2
 kind: Tenant
 metadata:
-  name: {{ .Values.name }}
+  name: {{ .Release.Name }}
   labels:
     {{- include "lib.labels" . | nindent 4 }}
   annotations:
