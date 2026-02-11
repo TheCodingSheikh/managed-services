@@ -3,6 +3,7 @@ kind: Tenant
 metadata:
   name: test
   annotations:
+    managedservices.thecodingsheikh.io/type: tenant
     lab.backstage.io/add-to-catalog: "true"
     lab.backstage.io/owner: user:default/abdo
     lab.backstage.io/system-type: app
