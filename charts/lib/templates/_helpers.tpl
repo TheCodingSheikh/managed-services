@@ -52,5 +52,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 ArgoCD tracking annotation
 */}}
 {{- define "lib.argocdAnnotations" -}}
-argocd.argoproj.io/tracking-id: {{ .Release.Namespace }}:{{ .Chart.Name }}/{{ .Release.Name }}
+app.kubernetes.io/instance: {{ .Release.Name | quote }}
+argocd.argoproj.io/instance: {{ .Release.Name | quote }}
 {{- end }}

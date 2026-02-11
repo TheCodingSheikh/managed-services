@@ -17,7 +17,7 @@ spec:
         apiVersion: helm.toolkit.fluxcd.io/v2beta2
         kind: HelmRelease
         metadata:
-          name: ${schema.spec.values.name}-${schema.metadata.?annotations["managedservices.thecodingsheikh.io/type"]}
+          name: ${schema.metadata.name}
           namespace: ${schema.metadata.namespace}
           ownerReferences:
             - apiVersion: ${schema.apiVersion}
@@ -29,7 +29,7 @@ spec:
           annotations:
             argocd.argoproj.io/tracking-id: ${schema.metadata.?annotations["argocd.argoproj.io/tracking-id"]}
         spec:
-          releaseName: ${schema.spec.values.name}-${schema.metadata.?annotations["managedservices.thecodingsheikh.io/type"]}
+          releaseName: ${schema.metadata.name}
           targetNamespace: ${schema.metadata.namespace}
           chart:
             spec:
