@@ -1,5 +1,5 @@
 id: push-service-manifest
-name: Push ${{ parameters.serviceType | title }} Manifest
+name: Push Manifest
 action: publish:github:pull-request
 input:
   repoUrl: github.com?owner=thecodingsheikh&repo=managed-services
