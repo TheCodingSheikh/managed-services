@@ -52,11 +52,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 ArgoCD tracking annotation
 */}}
 {{- define "lib.argocdAnnotations" -}}
-{{- $existingService := (lookup "helm.toolkit.fluxcd.io/v2beta2" "HelmRelease" .Release.Namespace .Release.Name) -}}
-{{- if $existingService -}}
-  argocd.argoproj.io/tracking-id: {{ index $existingService.metadata.annotations "argocd.argoproj.io/tracking-id" }}
-{{- else -}}
-  argocd.argoproj.io/tracking-id: none
-{{- end -}}
+  argocd.argoproj.io/tracking-id: {{ .Release.Name }}:helm.toolkit.fluxcd.io/HelmRelease:{{ .Release.Name }}/{{ .Release.Namespace }}
 {{- end }}
 
