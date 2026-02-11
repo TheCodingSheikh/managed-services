@@ -49,9 +49,25 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Add ownerReference to the resource
+*/}}
+{{- define "lib.ownerReference" -}}
+{{- $existingService := (lookup "helm.toolkit.fluxcd.io/v2beta2" "HelmRelease" .Release.Namespace .Release.Name) -}}
+    ownerReferences:
+    - apiVersion: {{ $existingService.apiVersion }}
+        kind: {{ $existingService.kind }}
+        name: {{ $existingService.metadata.name }}
+        uid: {{ $existingService.metadata.uid }}
+        blockOwnerDeletion: true
+        controller: false
+{{- end -}}
+
+
+{{/*
 ArgoCD tracking annotation
 */}}
 {{- define "lib.argocdAnnotations" -}}
-  argocd.argoproj.io/tracking-id: {{ .Release.Name }}:helm.toolkit.fluxcd.io/HelmRelease:{{ .Release.Name }}/{{ .Release.Namespace }}
+{{- $existingService := (lookup "helm.toolkit.fluxcd.io/v2beta2" "HelmRelease" .Release.Namespace .Release.Name) -}}
+    argocd.argoproj.io/tracking-id: {{ index $existingService.metadata.annotations "argocd.argoproj.io/tracking-id" }}
 {{- end }}
 
