@@ -1,0 +1,29 @@
+apiVersion: managedservices.thecodingsheikh.io/v1alpha1
+kind: Tenant
+metadata:
+  name: "ffd-tenant"
+  annotations:
+    lab.backstage.io/add-to-catalog: "true"
+    lab.backstage.io/system-type: app
+    lab.backstage.io/component-type: service
+    lab.backstage.io/lifecycle: managed
+    lab.backstage.io/links: string
+    
+    lab.backstage.io/title: Ffd Tenant 
+    lab.backstage.io/name: ffd-tenant
+    lab.backstage.io/system: tenant
+    managedservices.thecodingsheikh.io/type: tenant
+    backstage.io/last-applied-configuration: '{"serviceType":"tenant","owners":[{"role":"view","subject":"user:default/abdo3"}],"tenant":"ffd"}'
+    backstage.io/scaffolder-template: template:default/tenant
+spec:
+  values:
+    {
+      "serviceType": "tenant",
+      "owners": [
+        {
+          "role": "view",
+          "subject": "user:default/abdo3"
+        }
+      ],
+      "tenant": "ffd"
+    }
