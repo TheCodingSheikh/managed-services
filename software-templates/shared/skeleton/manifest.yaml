@@ -19,4 +19,4 @@ metadata:
     backstage.io/scaffolder-template: template:default/${{ values.params.serviceType }}
 spec:
   values:
-    {{ values.params | dump(2) | indent(4) }}
+    ${{ values.params | dump(2) | indent(4) }}
