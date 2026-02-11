@@ -1,16 +1,18 @@
 apiVersion: managedservices.thecodingsheikh.io/v1alpha1
 kind: ${{ values.params.serviceType | replace("-", " ") | title | replace(" ", "")}}
 metadata:
-  name: ${{ values.params.name }}-${{ values.params.serviceType }}
+  name: "${{ parameters.tenant }}-tenant{% if parameters.serviceType != 'tenant' %}-${{ parameters.name }}-${{ parameters.serviceType }}{% endif %}"
   annotations:
     lab.backstage.io/add-to-catalog: "true"
     lab.backstage.io/system-type: app
     lab.backstage.io/component-type: service
     lab.backstage.io/lifecycle: managed
     lab.backstage.io/links: string
-    lab.backstage.io/title: ${{ values.params.name | replace("-", " ") | title }} ${{ values.params.serviceType | replace("-", " ") | title }}
-    lab.backstage.io/name: ${{ values.params.name }}-${{ values.params.serviceType }}
-    lab.backstage.io/owner: ${{ values.params.owners[0].subject }}
+    {% if parameters.serviceType != 'tenant' %}
+    lab.backstage.io/dependsOn: component:default/${{ parameters.tenant }}-tenant
+    {% endif %}
+    lab.backstage.io/title: ${{ parameters.tenant | replace("-", " ") | title }} Tenant {% if parameters.serviceType != 'tenant' %} ${{ parameters.name | replace("-", " ") | title }} ${{ parameters.serviceType | replace("-", " ") | title }}{% endif %}
+    lab.backstage.io/name: ${{ parameters.tenant }}-tenant{% if parameters.serviceType != 'tenant' %}-${{ parameters.name }}-${{ parameters.serviceType }}{% endif %}
     lab.backstage.io/system: ${{ values.params.serviceType }}
     managedservices.thecodingsheikh.io/type: ${{ values.params.serviceType }}
 
