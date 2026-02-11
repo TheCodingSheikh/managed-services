@@ -1,0 +1,99 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: postgres
+  title: Managed Postgres Instance
+  description: Create a managed Postgres instance
+  tags:
+    - postgres
+    - kubernetes
+    - managed-service
+spec:
+  owner: platform-team
+  type: service
+
+  # Parameters reference charts/<service>/values.schema.json structure
+  parameters:
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/parameters/tenant-selector.yaml
+    - title: Instance Configuration
+      required:
+        - name
+        - instanceType
+        - storageSize
+      properties:
+        serviceType:
+          type: string
+          default: postgres
+          ui:widget: hidden
+        name:
+          title: Postgres Instance Name
+          type: string
+          description: Unique name of the postgres instance (lowercase, alphanumeric with dashes)
+          pattern: "^[a-z][a-z0-9-]*$"
+          minLength: 1
+          maxLength: 63
+          ui:autofocus: true
+        nameValidator:
+          type: string
+          ui:field: ScaffolderFieldValidator
+          ui:options:
+            watchField: name
+            validationType: api
+            apiPath: proxy/k8s/managedservices.thecodingsheikh.io/v1alpha1/postgreses
+            jmesPath: "items[?metadata.name == '{{ value }}']"
+            errorMessage: "Postgres '{{ value }}' is already in use"
+        instanceType:
+          title: Instance Type
+          type: string
+          description: The database instance type (RDS-like sizing)
+          default: db.t3.micro
+          enum:
+            - db.t3.micro
+            - db.t3.small
+            - db.t3.medium
+            - db.m5.large
+        storageSize:
+          title: Storage Size
+          type: string
+          description: The size of the storage volume
+          default: 10Gi
+          pattern: '^\d+(Gi|Mi)$'
+        postgresVersion:
+          title: Postgres Version
+          type: integer
+          description: Major version of Postgres
+          default: 16
+          enum:
+            - 13
+            - 14
+            - 15
+            - 16
+        ha:
+          title: High Availability
+          type: boolean
+          description: Enable High Availability (multi-replica)
+          default: false
+        backup:
+          title: Backup Enabled
+          type: boolean
+          description: Enable automated backups
+          default: true
+        nameValidator:
+          type: string
+          ui:field: ScaffolderFieldValidator
+          ui:options:
+            watchField: name
+            validationType: api
+            # validation logic for duplicate DBs could go here if API exists
+            # for now, placeholder or removing if not critical yet
+            # keeping simple
+
+  steps:
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-template.yaml
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/push-manifest.yaml
+
+  output:
+    text:
+      - title: Postgres Database Created
+        content: |
+          Your Postgres database is being created. You can view it in the catalog once it is ready.

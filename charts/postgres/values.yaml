@@ -1,0 +1,27 @@
+# Default values for postgres
+
+# Postgres Name (required)
+name: my-postgres
+
+# Instance Type (required)
+# Options: db.t3.micro, db.t3.small, db.t3.medium, db.m5.large
+instanceType: db.t3.micro
+
+# Postgres Version
+postgresVersion: 16
+
+# Storage Configuration
+storage:
+  size: 10Gi
+  # storageClassName: standard
+
+# High Availability
+ha:
+  enabled: false
+  replicas: 1
+
+# Backup Configuration
+backup:
+  enabled: true
+  schedule: "0 1 * * *"
+  retain: 7

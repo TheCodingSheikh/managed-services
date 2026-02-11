@@ -1,0 +1,13 @@
+title: Tenant Configuration
+required:
+  - tenant
+properties:
+  tenant:
+    title: Tenant Name
+    type: string
+    description: The name of the tenant to deploy into
+    ui:field: EntityPicker
+    ui:options:
+      catalogFilter:
+        - kind: Component
+          spec.system: tenant   

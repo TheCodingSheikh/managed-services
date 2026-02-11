@@ -1,7 +1,7 @@
 apiVersion: capsule.clastix.io/v1beta2
 kind: Tenant
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ include "lib.fullname" . }}
   labels:
     {{- include "lib.labels" . | nindent 4 }}
   annotations:
@@ -22,6 +22,5 @@ spec:
     additionalMetadataList:
       - labels:
           pod-security.kubernetes.io/enforce: baseline
-          capsule.clastix.io/tenant-quota: large
   ingressOptions:
     hostnameCollisionScope: Cluster

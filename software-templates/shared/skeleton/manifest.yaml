@@ -1,5 +1,5 @@
 apiVersion: managedservices.thecodingsheikh.io/v1alpha1
-kind: Tenant
+kind: ${{ values.params.serviceType | replace("-", " ") | title | replace(" ", "")}}
 metadata:
   name: ${{ values.params.name }}-${{ values.params.serviceType }}
   annotations:
@@ -16,9 +16,3 @@ metadata:
 
 spec:
   values:
-    name: ${{ values.params.name }}
-    owners:
-      {%- for owner in values.params.owners %}
-      - subject: ${{ owner.subject | dump }}
-        role: ${{ owner.role }}
-      {%- endfor %}
