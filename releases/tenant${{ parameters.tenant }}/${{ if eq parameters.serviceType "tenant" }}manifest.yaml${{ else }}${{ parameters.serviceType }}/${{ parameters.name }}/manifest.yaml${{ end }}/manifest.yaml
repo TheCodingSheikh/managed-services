@@ -1,0 +1,18 @@
+apiVersion: managedservices.thecodingsheikh.io/v1alpha1
+kind: Tenant
+metadata:
+  name: -tenant
+  annotations:
+    lab.backstage.io/add-to-catalog: "true"
+    lab.backstage.io/system-type: app
+    lab.backstage.io/component-type: service
+    lab.backstage.io/lifecycle: managed
+    lab.backstage.io/links: string
+    lab.backstage.io/title:  Tenant
+    lab.backstage.io/name: -tenant
+    lab.backstage.io/owner: group:default/test2
+    lab.backstage.io/system: tenant
+    managedservices.thecodingsheikh.io/type: tenant
+
+spec:
+  values:
