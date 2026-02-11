@@ -49,9 +49,9 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-ArgoCD tracking annotation
+ArgoCD tracking label
 */}}
-{{- define "lib.argocdAnnotations" -}}
+{{- define "lib.argocdlabels" -}}
 app.kubernetes.io/instance: {{ .Release.Name | quote }}
-argocd.argoproj.io/instance: {{ .Release.Name | quote }}
+argocd.argoproj.io/tracking-id: {{ .Release.Name | quote }}-
 {{- end }}
