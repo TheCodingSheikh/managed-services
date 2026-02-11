@@ -8,13 +8,15 @@ metadata:
     lab.backstage.io/component-type: service
     lab.backstage.io/lifecycle: managed
     lab.backstage.io/links: string
-    {% if values.params.serviceType != 'tenant' %}
+    {% if values.params.serviceType != 'tenant' -%}
     lab.backstage.io/dependsOn: component:default/${{ values.params.tenant }}-tenant
-    {% endif %}
+    {%- endif %}
     lab.backstage.io/title: ${{ values.params.tenant | replace("-", " ") | title }} Tenant {% if values.params.serviceType != 'tenant' %} ${{ values.params.name | replace("-", " ") | title }} ${{ values.params.serviceType | replace("-", " ") | title }}{% endif %}
     lab.backstage.io/name: ${{ values.params.tenant }}-tenant{% if values.params.serviceType != 'tenant' %}-${{ values.params.name }}-${{ values.params.serviceType }}{% endif %}
     lab.backstage.io/system: ${{ values.params.serviceType }}
     managedservices.thecodingsheikh.io/type: ${{ values.params.serviceType }}
-
+    backstage.io/last-applied-configuration: '${{ values.params | dump }}'
+    backstage.io/scaffolder-template: template:default/${{ values.params.serviceType }}
 spec:
   values:
+    {{ values.params | dump(2) | indent(4) }}

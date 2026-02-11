@@ -1,11 +1,11 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: postgres
+  name: &name postgres
   title: Managed Postgres Instance
   description: Create a managed Postgres instance
   tags:
-    - postgres
+    - *name
     - kubernetes
     - managed-service
 spec:
@@ -23,7 +23,9 @@ spec:
       properties:
         serviceType:
           type: string
-          default: postgres
+          # Must be same as template name
+          default: *name
+          # Must be hidden
           ui:widget: hidden
         name:
           title: Postgres Instance Name
