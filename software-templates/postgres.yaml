@@ -78,15 +78,6 @@ spec:
           type: boolean
           description: Enable automated backups
           default: true
-        nameValidator:
-          type: string
-          ui:field: ScaffolderFieldValidator
-          ui:options:
-            watchField: name
-            validationType: api
-            # validation logic for duplicate DBs could go here if API exists
-            # for now, placeholder or removing if not critical yet
-            # keeping simple
 
   steps:
     - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-template.yaml
