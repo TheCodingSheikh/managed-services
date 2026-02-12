@@ -40,7 +40,6 @@ Common labels
 */}}
 {{- define "lib.labels" -}}
 helm.sh/chart: {{ include "lib.chart" . }}
-{{ include "lib.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
