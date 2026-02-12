@@ -82,7 +82,8 @@ spec:
       name: Setup Schema
       action: roadiehq:utils:serialize:yaml
       input:
-        data: ${{ parameters }}
+        data: 
+          params: ${{ parameters }}
 
     - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-template.yaml
     - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/push-manifest.yaml
