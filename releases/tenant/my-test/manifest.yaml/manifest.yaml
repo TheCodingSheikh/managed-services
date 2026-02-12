@@ -1,0 +1,26 @@
+apiVersion: managedservices.thecodingsheikh.io/v1alpha1
+####### BEGIN MANAGED #######
+kind: Tenant
+metadata:
+  name: "my-test-tenant"
+  annotations:
+    lab.backstage.io/add-to-catalog: "true"
+    lab.backstage.io/system-type: app
+    lab.backstage.io/component-type: service
+    lab.backstage.io/lifecycle: managed
+    lab.backstage.io/links: string
+    
+    lab.backstage.io/title: My Test Tenant 
+    lab.backstage.io/name: my-test-tenant
+    lab.backstage.io/system: tenant
+    managedservices.thecodingsheikh.io/type: tenant
+    backstage.io/last-applied-configuration: '{"serviceType":"tenant","tenant":"my-test","owners":[{"role":"edit","subject":"user:default/abdo"}]}'
+    backstage.io/scaffolder-template: template:default/tenant
+####### END MANAGED #######
+    backstage.io/immutable-fields: 'tenant'
+spec:
+  values:
+    tenant: my-test
+    owners:
+      - subject: user:default/abdo
+        role: edit
