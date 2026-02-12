@@ -2,8 +2,7 @@ id: fetch-skeleton
 name: Scaffold Project Files
 action: fetch:template
 input:
-  url: ./shared/skeleton
+  url: ./skeleton
   targetPath: ./output
   values:
     params: ${{ parameters }}
-    schema: ${{ steps.setup-schema.outputs.serialized }}

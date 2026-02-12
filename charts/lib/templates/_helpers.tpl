@@ -6,6 +6,13 @@ Expand the name of the chart.
 {{- end }}
 
 {{/*
+Tenant name.
+*/}}
+{{- define "lib.tenant" -}}
+{{- .Values.tenant }}
+{{- end }}
+
+{{/*
 Create a default fully qualified app name.
 */}}
 {{- define "lib.fullname" -}}

@@ -1,4 +1,5 @@
 apiVersion: managedservices.thecodingsheikh.io/v1alpha1
+####### BEGIN MANAGED #######
 kind: ${{ values.params.serviceType | replace("-", " ") | title | replace(" ", "")}}
 metadata:
   name: "${{ values.params.tenant }}-tenant{% if values.params.serviceType != 'tenant' %}-${{ values.params.name }}-${{ values.params.serviceType }}{% endif %}"
@@ -17,6 +18,22 @@ metadata:
     managedservices.thecodingsheikh.io/type: ${{ values.params.serviceType }}
     backstage.io/last-applied-configuration: '${{ values.params | dump }}'
     backstage.io/scaffolder-template: template:default/${{ values.params.serviceType }}
+####### END MANAGED #######
+    backstage.io/immutable-fields: 'tenant,name'
 spec:
   values:
-    ${{ values.schema | indent(4) }}
+    name: ${{ values.params.name }}
+    instanceType: ${{ values.params.instanceType }}
+    postgresVersion: ${{ values.params.postgresVersion }}
+    storage:
+      {%- for key, val in values.params.storage %}
+      ${{ key }}: ${{ val }}
+      {%- endfor %}
+    ha:
+      {%- for key, val in values.params.ha %}
+      ${{ key }}: ${{ val }}
+      {%- endfor %}
+    backup:
+      {%- for key, val in values.params.backup %}
+      ${{ key }}: ${{ val }}
+      {%- endfor %}

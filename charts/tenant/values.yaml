@@ -1,7 +1,7 @@
 # Default values for tenant
 
 # Tenant name (required)
-name: my-tenant
+tenant: my-tenant
 
 # Owner configuration (required)
 # Each owner has: subject (user/group name), role (admin/edit/view)

@@ -3,9 +3,9 @@
   "title": "Tenant Configuration",
   "description": "Configuration for Tenant resource",
   "type": "object",
-  "required": ["name", "owners"],
+  "required": ["tenant", "owners"],
   "properties": {
-    "name": {
+    "tenant": {
       "type": "string",
       "description": "Tenant name",
       "pattern": "^[a-z][a-z0-9-]*$",

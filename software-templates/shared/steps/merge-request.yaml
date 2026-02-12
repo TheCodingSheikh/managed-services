@@ -1,0 +1,12 @@
+id: push-service-manifest
+name: Push Manifest
+action: publish:github:pull-request
+input:
+  repoUrl: github.com?owner=thecodingsheikh&repo=managed-services
+  branchName: "create-{% if parameters.serviceType == 'tenant' %}${{ parameters.tenant }}{% else %}${{ parameters.name }}-${{ parameters.serviceType }}-in-${{ parameters.tenant }}{% endif %}-tenant"
+  sourcePath: ./output
+  targetPath: "releases/tenant/${{ parameters.tenant }}/{% if parameters.serviceType == 'tenant' %}manifest.yaml{% else %}${{ parameters.serviceType }}/${{ parameters.name }}/manifest.yaml{% endif %}"
+  title: "create {% if parameters.serviceType == 'tenant' %}${{ parameters.tenant }}{% else %}${{ parameters.name }} ${{ parameters.serviceType }} in ${{ parameters.tenant }}{% endif %} tenant"
+  description: "create {% if parameters.serviceType == 'tenant' %}${{ parameters.tenant }}{% else %}${{ parameters.name }} ${{ parameters.serviceType }} in ${{ parameters.tenant }}{% endif %} tenant"
+  gitAuthorName: ${{ user.entity.metadata.name }}
+  gitAuthorEmail: backstage@thecodingsheikh.io

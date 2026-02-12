@@ -1,11 +1,11 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: tenant
+  name: &name tenant
   title: Managed Tenant
   description: Create a managed tenant
   tags:
-    - tenant
+    - *name
     - kubernetes
     - managed-service
 spec:
@@ -17,11 +17,11 @@ spec:
     - title: Tenant Configuration
       required:
         - tenant
-        - owners
       properties:
         serviceType:
           type: string
-          default: tenant
+          # Must be same as template name
+          default: *name
           # Must be hidden
           ui:widget: hidden
         tenant:
@@ -41,6 +41,10 @@ spec:
             apiPath: proxy/k8s/managedservices.thecodingsheikh.io/v1alpha1/tenants
             jmesPath: "items[?metadata.name == '{{ value }}']"
             errorMessage: "Tenant '{{ value }}' is already in use"
+    - title: Owners
+      required:
+        - owners
+      properties:
         owners:
           title: Tenant Owners
           type: array
