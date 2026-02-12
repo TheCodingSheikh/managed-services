@@ -19,7 +19,4 @@ metadata:
     backstage.io/scaffolder-template: template:default/${{ values.params.serviceType }}
 spec:
   values:
-    ${{ values.params | yaml | indent(4) }}
-
-test:
     ${{ values.schema | indent(4) }}
