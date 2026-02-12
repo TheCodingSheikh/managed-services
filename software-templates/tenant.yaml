@@ -78,6 +78,11 @@ spec:
                   - View
 
   steps:
+    - id: setup-schema
+      action: roadiehq:utils:serialize:yaml
+      input:
+        data: ${{ parameters }}
+
     - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-template.yaml
     - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/push-manifest.yaml
 

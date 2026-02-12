@@ -6,3 +6,4 @@ input:
   targetPath: ./output
   values:
     params: ${{ parameters }}
+    schema: ${{ steps.setup-schema.outputs.serialized }}
