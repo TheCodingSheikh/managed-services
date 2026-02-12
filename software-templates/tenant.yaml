@@ -79,6 +79,7 @@ spec:
 
   steps:
     - id: setup-schema
+      name: Setup Schema
       action: roadiehq:utils:serialize:yaml
       input:
         data: ${{ parameters }}
