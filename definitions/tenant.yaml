@@ -34,7 +34,7 @@ spec:
           chart:
             spec:
               reconcileStrategy: Revision
-              chart: charts/${schema.metadata.?annotations["managedservices.thecodingsheikh.io/type"]}
+              chart: charts/tenant
               sourceRef:
                 kind: GitRepository
                 name: managed-services

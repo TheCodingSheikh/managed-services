@@ -1,29 +1,22 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: &name tenant
+  name: tenant
   title: Managed Tenant
   description: Create a managed tenant
   tags:
-    - *name
+    - tenant
     - kubernetes
     - managed-service
 spec:
   owner: platform-team
   type: service
 
-  # Parameters reference charts/<service>/values.schema.json structure
   parameters:
     - title: Tenant Configuration
       required:
         - tenant
       properties:
-        serviceType:
-          type: string
-          # Must be same as template name
-          default: *name
-          # Must be hidden
-          ui:widget: hidden
         tenant:
           title: Tenant Name
           type: string
@@ -48,7 +41,7 @@ spec:
         owners:
           title: Tenant Owners
           type: array
-          description: List of tenant owners (Can be changed later)
+          description: List of tenant owners
           minItems: 1
           ui:options:
             orderable: true
@@ -81,11 +74,29 @@ spec:
                   - View
 
   steps:
-    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-template.yaml
-    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/push-manifest.yaml
+    - id: fetch-skeleton
+      name: Scaffold Manifest
+      action: fetch:template
+      input:
+        url: ./skeleton
+        targetPath: ./output
+        values:
+          params: ${{ parameters }}
+    - id: push-manifest
+      name: Push Manifest
+      action: publish:github:pull-request
+      input:
+        repoUrl: github.com?owner=thecodingsheikh&repo=managed-services-releases
+        branchName: "create-${{ parameters.tenant }}-tenant"
+        sourcePath: ./output
+        targetPath: "${{ parameters.tenant }}/manifest.yaml"
+        title: "create ${{ parameters.tenant }} tenant"
+        description: "create ${{ parameters.tenant }} tenant"
+        gitAuthorName: ${{ user.entity.metadata.name }}
+        gitAuthorEmail: backstage@thecodingsheikh.io
 
   output:
     text:
       - title: Tenant Created
         content: |
-          Your tenant is being created. You can view it in the catalog once it is ready.
+          Your tenant is being created.

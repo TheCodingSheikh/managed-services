@@ -1,0 +1,20 @@
+
+🎉 Tenant "{{ include "lib.fullname" . }}" has been created!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Owners:
+  {{- range .Values.owners }}
+    • {{ .subject }} ({{ .role }})
+  {{- end }}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Next Steps:
+    1. Create a namespace under this tenant:
+       kubectl create ns {{ include "lib.fullname" . }}-<namespace-name>
+
+    2. Deploy services into this tenant using
+       the Backstage service catalog.
+
+  Managed by: Managed Services Framework

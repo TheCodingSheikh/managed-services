@@ -1,8 +1,24 @@
-# Shared Backstage Template Steps
+# Shared Steps
 
-This directory contains reusable step definitions that can be referenced across multiple software templates.
+Reusable step definitions for non-tenant software templates, referenced via `$yaml:`.
 
 ## Usage
 
-Reference these steps in your template.yaml using $yaml:
+```yaml
+steps:
+  - $yaml: https://github.com/<org>/managed-services/blob/main/software-templates/shared/steps/fetch-template.yaml
+  - $yaml: https://github.com/<org>/managed-services/blob/main/software-templates/shared/steps/push-manifest.yaml
+```
 
+## Push Flow
+
+The push step places the manifest at releases repo, targeted by ArgoCD ApplicationSet:
+```
+<tenant>/<service>/<name>/manifest.yaml
+```
+for tenants:
+```
+<tenant>/manifest.yaml
+```
+
+This is my preffered way to manage my services.

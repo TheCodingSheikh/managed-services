@@ -1,29 +1,22 @@
-# Charts Guide
+# Charts
 
-This directory contains the Helm charts for all managed services.
+Helm charts for managed services. Each chart represents a deployable service.
 
-## Naming Convention
+## Structure
 
-The **Helm Chart Name** must match the system-wide service name exactly.
-This ensures consistency across:
-*   RGD Name (`definitions/<service>.yaml`)
-*   Software Template Name (`software-templates/<service>/template.yaml`)
-*   Helm Chart Name (`charts/<service>/Chart.yaml`)
+- `lib/` — shared Helm helpers (labels, selectors, annotations). Every chart depends on this.
+- `tenant/` — multi-tenant isolation (Core Service)
 
-## Dependencies
+## Adding a Chart
 
-### The `lib` Chart
-**Every chart MUST include the `lib` chart as a dependency.**
-The `lib` chart contains global configurations, shared manifests, and common logic required by all managed services.
-
+Run `make new SERVICE=<name>` to scaffold. Then:
+1. Add properties to `values.schema.json`
+2. Add K8s templates in `templates/`
+3. Run `make lint` to validate
 
 ## Composite Services
 
-If a service is a combination of multiple managed services (e.g., a "LAMP Stack" combining Linux, Apache, MySQL, PHP):
-
-*   **Do not use Helm sub-chart dependencies** for the managed components.
-*   **Instead, use the Managed Service Resources**.
-    *   Your chart's `templates/` should include the Custom Resources (CRs) for the constituent services (instances of their RGDs).
-    *   For example, to include a Postgres database, define a `kind: Postgres` resource in your templates, rather than depending on the `postgres` chart directly.
-
-This ensures that all components are governed by their respective Resource Graph Definitions (RGDs), maintaining consistent platform policies and lifecycle management.
+For services combining multiple managed services:
+- Don't use Helm sub-chart dependencies
+- Include the Custom Resources (CRs) for constituent services in your templates
+- Example: add a `kind: Postgres` resource in your templates instead of depending on the postgres chart

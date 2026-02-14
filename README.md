@@ -1,111 +1,95 @@
 # Managed Services Framework
 
-A Kubernetes-native framework for building managed services using **Helm Charts**, **KRO ResourceGraphDefinitions**, and **Backstage Software Templates**.
+A Kubernetes-native framework for building self-service managed services using Helm, KRO, and Backstage — deployed via GitOps.
+
+> **One schema. Three systems.** Each service's `values.schema.json` drives Helm validation, generates custom Kubernetes APIs (via KRO), and renders Backstage self-service forms.
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                           Backstage Portal                              │
-│  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │  Software Template (parameters from values.schema.json)          │   │
-│  └──────────────────────────────┬──────────────────────────────────┘   │
-└─────────────────────────────────┼───────────────────────────────────────┘
-                                  │ Creates
-                                  ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        Kubernetes Cluster                               │
-│  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │  KRO ResourceGraphDefinition                                      │  │
-│  │  ┌────────────────────┐     ┌─────────────────────────────────┐  │  │
-│  │  │ Custom Resource    │────▶│ HelmRelease (Flux CD)           │  │  │
-│  │  │ (ManagedPostgres)  │     │ ┌─────────────────────────────┐ │  │  │
-│  │  └────────────────────┘     │ │ Helm Chart (postgres)       │ │  │  │
-│  │                             │ │ + Umbrella Chart (common)   │ │  │  │
-│  │                             │ └─────────────────────────────┘ │  │  │
-│  │                             └─────────────────────────────────┘  │  │
-│  └──────────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                              Developer Portal                                │
+│  ┌─────────────────────────────────────────────────────────────────────────┐  │
+│  │  Backstage Software Template                                           │  │
+│  │  (parameters derived from values.schema.json)                         │  │
+│  └───────────────────────────────┬─────────────────────────────────────────┘  │
+└──────────────────────────────────┼────────────────────────────────────────────┘
+                                   │ Creates Pull Request
+                                   ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           Releases Git Repository                                    │
+│  <tenant>/                                                  │
+│    ├── manifest.yaml              (Tenant CR)                               │
+│    └── <service>/<name>/                                                    │
+│        └── manifest.yaml          (Service CR)                              │
+└───────────────────────────────────┼─────────────────────────────────────────┘
+                                    │ ArgoCD syncs
+                                    ▼
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                          Kubernetes Cluster                                   │
+│                                                                              │
+│  KRO ResourceGraphDefinition ──▶ Flux HelmRelease ──▶ Helm Chart deployed   │
+│                                                                              │
+└───────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Project Structure
 
 ```
 managed-services/
-├── charts/                      # Helm charts
-│   ├── umbrella/                # Common resources (ServiceAccount, ConfigMap, etc.)
-│   └── postgres/                # Example managed service
-├── definitions/                 # KRO ResourceGraphDefinitions
-│   └── postgres.yaml
-└── software-templates/          # Backstage software templates
-    └── postgres/
-        └── template.yaml
+├── Makefile
+├── charts/                        # Helm charts
+│   ├── lib/                       #   Shared library (helpers, resource mappings)
+│   └── tenant/                    #   Multi-tenant isolation (Core)
+├── definitions/                   # KRO ResourceGraphDefinitions
+│   ├── gitrepository.yaml         #   Flux GitRepository source
+│   └── tenant.yaml                #   Tenant RGD (Core)
+├── software-templates/
+│   ├── shared/                     # Shared parameters & steps
+│   └── tenant/                     # Tenant template
+└── scripts/
+    ├── generate.py                 # Scaffolding script
+    └── templates/                  # Scaffold templates
 ```
 
-## Key Concepts
-
-### values.schema.json as Single Source of Truth
-
-Each Helm chart includes a `values.schema.json` that defines the valid configuration. This schema is used by:
-1. **Helm** - Validates `values.yaml` during install/upgrade
-2. **KRO** - Derives the custom resource spec schema
-3. **Backstage** - Generates form fields for the software template
-
-### Umbrella Chart
-
-The `umbrella` chart provides common Kubernetes resources shared by all managed services:
-- ServiceAccount
-- ConfigMap (common configuration)
-- NetworkPolicy
-- ResourceQuota
-
-### KRO ResourceGraphDefinition
-
-Each managed service has a KRO definition that:
-1. Creates a custom API (e.g., `ManagedPostgres`)
-2. Deploys a Flux CD `HelmRelease` when instantiated
-3. Aggregates status from underlying resources
-
-## Prerequisites
-
-- Kubernetes cluster (1.25+)
-- [KRO](https://kro.run) installed
-- [Flux CD](https://fluxcd.io) Helm controller installed
-- [Backstage](https://backstage.io) instance (for templates)
-
-## Usage
-
-### Deploy a Managed Service
-
-```yaml
-apiVersion: managedservices.example.com/v1alpha1
-kind: ManagedPostgres
-metadata:
-  name: my-postgres
-  namespace: default
-spec:
-  replicas: 3
-  storage:
-    size: 10Gi
-    storageClass: standard
-  resources:
-    requests:
-      memory: 256Mi
-      cpu: 100m
-```
-
-## Development
-
-### Validate Helm Charts
+### Make Targets
 
 ```bash
-helm lint charts/umbrella
-helm lint charts/postgres
-helm template my-release charts/postgres
+make help                # Show available targets
+make new SERVICE=redis   # Scaffold a new service
+make lint                # Lint all Helm charts
+make template            # Render charts (dry-run)
+make validate            # Validate values against JSON schemas
+make clean               # Remove build artifacts
+make all                 # Run all checks
 ```
 
-### Validate JSON Schemas
+### Adding a New Service
 
 ```bash
-npx ajv validate -s charts/postgres/values.schema.json -d charts/postgres/values.yaml
+make new SERVICE=postgres
 ```
+
+Generates:
+- `definitions/postgres.yaml` — KRO ResourceGraphDefinition
+- `charts/postgres/` — Helm chart scaffold
+- `software-templates/postgres/` — Backstage template + skeleton
+- Auto-registers in `software-templates/all.yaml`
+
+The name derives the kind: `postgres` → `Postgres`, `full-stack` → `FullStack`.
+
+Then customize:
+- `charts/postgres/values.schema.json` — add properties
+- `charts/postgres/templates/` — add K8s resource templates
+- `software-templates/postgres/template.yaml` — add parameters
+- `software-templates/postgres/skeleton/manifest.yaml` — map values
+
+## Setup
+
+When forking, update these values to match your environment:
+
+| What | Where | Default |
+|------|-------|---------|
+| API group | `scripts/generate.py`, tenant software template `template.yaml`, tenant definition `tenant.yaml` | `managedservices.thecodingsheikh.io` |
+| GitHub org/repo | `scripts/generate.py`, tenant `template.yaml` | `thecodingsheikh/managed-services` |
+| Releases Repo | tenant software template `template.yaml`, `push-manifest.yaml` | `thecodingsheikh/managed-services-releases` |

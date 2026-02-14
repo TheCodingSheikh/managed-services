@@ -2,8 +2,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Location
 metadata:
   name: managed-services
-  description: Collection of all the managed services software templates
+  description: All managed service templates
 spec:
   targets:
     - ./tenant/template.yaml
-    - ./postgres/template.yaml

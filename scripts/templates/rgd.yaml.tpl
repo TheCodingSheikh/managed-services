@@ -1,12 +1,13 @@
+# Placeholders: __SERVICE_NAME__, __SERVICE_KIND__, __TIMEOUT__, __API_GROUP__, __REPO_NAME__
 apiVersion: kro.run/v1alpha1
 kind: ResourceGraphDefinition
 metadata:
-  name: postgres
+  name: __SERVICE_NAME__
 spec:
   schema:
     apiVersion: v1alpha1
-    group: managedservices.thecodingsheikh.io
-    kind: Postgres
+    group: __API_GROUP__
+    kind: __SERVICE_KIND__
     spec:
       values: object
   resources:
@@ -34,11 +35,11 @@ spec:
           chart:
             spec:
               reconcileStrategy: Revision
-              chart: charts/${schema.metadata.?annotations["managedservices.thecodingsheikh.io/type"]}
+              chart: charts/__SERVICE_NAME__
               sourceRef:
                 kind: GitRepository
-                name: managed-services
-                namespace: managed-services
+                name: __REPO_NAME__
+                namespace: __REPO_NAME__
               interval: 5m
           interval: 15m
           values: ${schema.spec.values}
@@ -49,4 +50,4 @@ spec:
             remediation:
               retries: 3
               remediateLastFailure: true
-          timeout: 10m
+          timeout: __TIMEOUT__
