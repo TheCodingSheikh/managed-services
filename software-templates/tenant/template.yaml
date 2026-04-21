@@ -30,7 +30,6 @@ spec:
           ui:field: ScaffolderFieldValidator
           ui:options:
             watchField: tenant
-            validationType: api
             apiPath: proxy/k8s/managedservices.thecodingsheikh.io/v1alpha1/tenants
             jmesPath: "items[?metadata.name == '{{ value }}']"
             errorMessage: "Tenant '{{ value }}' is already in use"
@@ -89,7 +88,7 @@ spec:
         repoUrl: github.com?owner=thecodingsheikh&repo=managed-services-releases
         branchName: "create-${{ parameters.tenant }}-tenant"
         sourcePath: ./output
-        targetPath: "${{ parameters.tenant }}/manifest.yaml"
+        targetPath: "${{ parameters.tenant }}"
         title: "create ${{ parameters.tenant }} tenant"
         description: "create ${{ parameters.tenant }} tenant"
         gitAuthorName: ${{ user.entity.metadata.name }}

@@ -15,10 +15,12 @@ metadata:
     lab.backstage.io/title: ${{ values.params.tenant | replace("-", " ") | title }} Tenant
     lab.backstage.io/name: ${{ values.params.tenant }}-tenant
     lab.backstage.io/system: tenant
+    lab.backstage.io/owners: {%- for owner in values.params.owners %}${{ owner.subject }}:${{ owner.role }}{%- endfor %}
     # Backstage entity scaffolder plugin
     backstage.io/last-applied-configuration: '${{ values.params | dump }}'
     backstage.io/scaffolder-template: template:default/tenant
     backstage.io/immutable-fields: 'tenant'
+    backstage.io/scaffolder-edit-roles: 'admin'
 spec:
   values:
     tenant: ${{ values.params.tenant }}
