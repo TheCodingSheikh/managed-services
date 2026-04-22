@@ -17,9 +17,7 @@ spec:
         files:
           - path: "**/manifest.yaml"
         values:
-          # path.segments has a leading empty string, so index 1 is the first
-          # real segment.
-          tenant: "{{ index .path.segments 1 }}"
+          tenant: "{{ index .path.segments 0 }}"
           name: "{{ .path.basename }}"
           path: "{{ .path.path }}"
   template:
@@ -45,12 +43,12 @@ spec:
             capsule.clastix.io/tenant: "{{ .values.tenant }}"
         syncOptions:
           - CreateNamespace=true
-  # Tenant manifests live at <tenant>/manifest.yaml        → len(segments) == 2
-  # Service manifests at <tenant>/<service>/<instance>/... → len(segments) == 4
+  # Tenant manifests live at <tenant>/manifest.yaml        → len(segments) == 1
+  # Service manifests at <tenant>/<service>/<instance>/... → len(segments) == 3
   templatePatch: |
     metadata:
-      {{ if gt (len .path.segments) 2 }}
-      name: '{{ .values.tenant }}-tenant-{{ index .path.segments 2 }}-{{ .values.name }}'
+      {{ if gt (len .path.segments) 1 }}
+      name: '{{ .values.tenant }}-tenant-{{ index .path.segments 1 }}-{{ .values.name }}'
       {{ else }}
       name: '{{ .values.tenant }}-tenant'
       {{ end }}
@@ -58,8 +56,8 @@ spec:
     spec:
       destination:
         name: in-cluster
-        {{ if gt (len .path.segments) 2 }}
-        namespace: '{{ .values.tenant }}-tenant-{{ index .path.segments 2 }}-{{ .values.name }}'
+        {{ if gt (len .path.segments) 1 }}
+        namespace: '{{ .values.tenant }}-tenant-{{ index .path.segments 1 }}-{{ .values.name }}'
         {{ else }}
         namespace: '{{ .values.tenant }}-tenant'
         {{ end }}

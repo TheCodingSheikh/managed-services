@@ -12,7 +12,7 @@ metadata:
     lab.backstage.io/title: ${{ values.params.tenant | replace("-", " ") | title }} Tenant ${{ values.params.name | replace("-", " ") | title }} __SERVICE_TITLE__
     lab.backstage.io/name: ${{ values.params.tenant }}-tenant-${{ values.params.name }}-__SERVICE_NAME__
     lab.backstage.io/system: __SERVICE_NAME__
-    lab.backstage.io/owners: {% for owner in values.owners %}${{ owner.subject }}:${{ owner.role }}{% if not loop.last %},{% endif %}{%- endfor %}
+    lab.backstage.io/owners: '{% for owner in values.owners %}${{ owner.subject }}:${{ owner.role }}{% if not loop.last %},{% endif %}{%- endfor %}'
     # Backstage entity scaffolder plugin
     backstage.io/last-applied-configuration: '${{ values.params | dump }}'
     backstage.io/scaffolder-template: template:default/__SERVICE_NAME__
