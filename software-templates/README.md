@@ -1,37 +1,55 @@
 # Software Templates
 
-Backstage software templates for creating managed services via self-service.
+Backstage scaffolder templates. Each one produces a CR manifest and opens a PR against the releases repo.
 
-## Structure
+## Layout
 
 ```
 software-templates/
 ├── shared/
 │   ├── parameters/
-│   │   └── tenant-selector.yaml   # Tenant picker (used by all services)
-│   └── steps/
-│       └── ...                    # Shared steps
-├── tenant/
-│   ├── template.yaml              # Tenant template
+│   │   └── tenant-selector.yaml   # Tenant picker (EntityPicker filtered to tenants)
+│   └── steps/                      # fetch-tenant, fetch-template, push-manifest
+├── tenant/                         # Tenant template (special — see below)
+│   ├── template.yaml
 │   └── skeleton/manifest.yaml
-└── all.yaml                       # Backstage location file
+├── <service>/                      # One folder per service, scaffolded
+└── all.yaml                        # Backstage location file, auto-updated
 ```
 
-## Best Practices
+## Where manifests end up
 
-- **services** - other than tenant - use shared steps from `shared/steps/` 
+The push step writes to the releases repo at:
 
-## Adding a Template
+```
+<releases-repo>/<tenant>/manifest.yaml                          ← Tenant
+<releases-repo>/<tenant>/<service>/<instance>/manifest.yaml     ← Service instance
+```
 
-Run `make new SERVICE=<name>` to scaffold. Then:
-1. Add parameters to `template.yaml` matching `charts/<service>/values.schema.json`
-2. Map values in `skeleton/manifest.yaml`
+ArgoCD reconciles that repo into the cluster.
 
-## Template Structure
+## Template shape
 
-Each template - other than tenant - has:
+Every service template follows the same three steps:
 
-1. **Tenant selector** — shared parameter picking the owning tenant
-2. **Service configuration** — name + service-specific params from `values.schema.json`
-3. **Hidden `serviceType`** — used by the shared steps
-4. **Shared steps** — fetch skeleton + push PR or others based on your setup
+1. **`fetch-tenant`** — load the owning tenant from the catalog, expose its `owners`.
+2. **`fetch-template`** — render the skeleton with form params + inherited owners.
+3. **`push-manifest`** — open a PR on the releases repo.
+
+The **tenant template** is the exception: it has no owning tenant, so it skips step 1 and takes its own `owners` array directly from the form.
+
+## Adding a template
+
+```bash
+make new SERVICE=<name>
+```
+
+Then wire three files to each other:
+
+| File | Add |
+|---|---|
+| `charts/<name>/values.schema.json` | Properties for `spec.values` |
+| `software-templates/<name>/template.yaml` | Form parameters matching the schema |
+| `software-templates/<name>/skeleton/manifest.yaml` | Map form input → CR body |
+
+A property that exists in the schema but not in the form will silently fail at HelmRelease time — keep them in sync.

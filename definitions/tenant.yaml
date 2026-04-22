@@ -49,4 +49,4 @@ spec:
             remediation:
               retries: 3
               remediateLastFailure: true
-          timeout: 5m
+          timeout: 10m

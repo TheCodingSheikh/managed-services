@@ -3,7 +3,7 @@ SHELL := /bin/bash
 
 CHARTS := $(shell find charts -maxdepth 2 -name Chart.yaml -not -path '*/lib/*' | xargs -I{} dirname {})
 
-.PHONY: help new build-deps lint template validate clean all
+.PHONY: help new regen-defs build-deps lint template validate clean all
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -14,6 +14,9 @@ ifndef SERVICE
 	@echo "Usage: make new SERVICE=<name>"; exit 1
 endif
 	@python3 scripts/generate.py $(SERVICE)
+
+regen-defs: ## Regenerate every definitions/<svc>.yaml from its chart
+	@python3 scripts/generate.py --regen-defs
 
 build-deps: ## Build Helm dependencies
 	@for chart in $(CHARTS); do helm dependency build $$chart 2>/dev/null || true; done

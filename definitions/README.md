@@ -1,28 +1,29 @@
 # Definitions
 
-KRO ResourceGraphDefinitions that create custom Kubernetes APIs for each managed service.
+KRO `ResourceGraphDefinition`s that turn each domain CR into a Flux `HelmRelease`.
 
-## How It Works
+## What they do
 
-When a custom resource (e.g., `kind: Postgres`) is created:
+When a user creates a `Tenant` (or `Postgres`, etc.) in the cluster:
 
-1. KRO detects it via the ResourceGraphDefinition
-2. KRO creates a Flux HelmRelease with values from `spec.values`
-3. Flux pulls the Helm chart from the GitRepository and deploys it
-4. KRO reports readiness once the HelmRelease reaches `Ready: True`
+1. KRO sees the CR (because the RGD registered its kind).
+2. KRO renders a `HelmRelease` pointing at the matching chart in this repo, passing `spec.values` through.
+3. Flux pulls the chart and deploys it.
+4. KRO reports the CR as Ready once the `HelmRelease` is Ready.
 
 ## Files
 
-- `gitrepository.yaml` — Flux GitRepository pointing to this repo
-- `tenant.yaml` — Tenant RGD (Core)
+- `gitrepository.yaml` — Flux `GitRepository` source pointing at this repo.
+- `<service>.yaml` — one RGD per chart under `charts/`.
 
-## Generation
+## They are auto-generated
 
-Definitions are generated from `scripts/templates/rgd.yaml.tpl`:
+Every RGD is pure boilerplate derived from the chart name. Don't hand-edit them — regenerate:
 
 ```bash
-make new SERVICE=postgres   # generates definitions/postgres.yaml
+make regen-defs
 ```
 
-Every RGD is structurally identical — only the name, kind and chart location differ.
+This rebuilds `definitions/<svc>.yaml` for every chart under `charts/` (except `lib`). It's idempotent and safe to run at any time.
 
+`make new SERVICE=<name>` calls the same code path, so a scaffolded service's definition is always in sync with its chart.

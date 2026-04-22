@@ -1,13 +1,9 @@
 apiVersion: managedservices.thecodingsheikh.io/v1alpha1
-# ┌──────────────────────────────────────────────────────────────────┐
-# │ TENANT SKELETON — This is the root service skeleton.            │
-# │ Non-tenant services are generated via `make scaffold`.          │
-# └──────────────────────────────────────────────────────────────────┘
 kind: Tenant
 metadata:
   name: "${{ values.params.tenant }}-tenant"
   annotations:
-    # Backstage catalog discovery through kerasky kubernetes ingestor plugin
+    # Backstage catalog discovery 
     lab.backstage.io/add-to-catalog: "true"
     lab.backstage.io/system-type: app
     lab.backstage.io/component-type: service
@@ -15,7 +11,7 @@ metadata:
     lab.backstage.io/title: ${{ values.params.tenant | replace("-", " ") | title }} Tenant
     lab.backstage.io/name: ${{ values.params.tenant }}-tenant
     lab.backstage.io/system: tenant
-    lab.backstage.io/owners: {%- for owner in values.params.owners %}${{ owner.subject }}:${{ owner.role }}{%- endfor %}
+    lab.backstage.io/owners: {% for owner in values.params.owners %}${{ owner.subject }}:${{ owner.role }}{% if not loop.last %},{% endif %}{%- endfor %}
     # Backstage entity scaffolder plugin
     backstage.io/last-applied-configuration: '${{ values.params | dump }}'
     backstage.io/scaffolder-template: template:default/tenant

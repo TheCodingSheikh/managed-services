@@ -5,6 +5,6 @@ input:
   repoUrl: github.com?owner=thecodingsheikh&repo=managed-services-releases
   branchName: "create-${{ parameters.name }}-${{ parameters.serviceType }}-in-${{ parameters.tenant }}-tenant"
   sourcePath: ./output
-  targetPath: "releases/tenant/${{ parameters.tenant }}/${{ parameters.serviceType }}/${{ parameters.name }}/manifest.yaml"
+  targetPath: "${{ parameters.tenant }}/${{ parameters.serviceType }}/${{ parameters.name }}"
   title: "create ${{ parameters.name }} ${{ parameters.serviceType }} in ${{ parameters.tenant }} tenant"
   description: "create ${{ parameters.name }} ${{ parameters.serviceType }} in ${{ parameters.tenant }} tenant"

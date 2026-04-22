@@ -1,0 +1,64 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: managed-services-releases
+  namespace: argo-cd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=default"]
+  generators:
+    - git:
+        # Releases repo. Every manifest.yaml becomes an Application.
+        #   <tenant>/manifest.yaml                      → tenant app
+        #   <tenant>/<service>/<instance>/manifest.yaml → service instance app
+        repoURL: https://github.com/TheCodingSheikh/managed-services-releases.git
+        revision: HEAD
+        requeueAfterSeconds: 20
+        files:
+          - path: "**/manifest.yaml"
+        values:
+          # path.segments has a leading empty string, so index 1 is the first
+          # real segment.
+          tenant: "{{ index .path.segments 1 }}"
+          name: "{{ .path.basename }}"
+          path: "{{ .path.path }}"
+  template:
+    metadata:
+      name: placeholder
+      namespace: argo-cd
+    spec:
+      project: managed-services
+      source:
+        repoURL: https://github.com/TheCodingSheikh/managed-services-releases.git
+        targetRevision: HEAD
+        path: "{{ .values.path }}"
+      destination:
+        name: in-cluster
+        namespace: placeholder
+      syncPolicy:
+        # automated:
+        #   prune: true
+        #   selfHeal: true
+        managedNamespaceMetadata:
+          labels:
+            capsule.clastix.io/tenant: "{{ .values.tenant }}"
+        syncOptions:
+          - CreateNamespace=true
+  # Tenant manifests live at <tenant>/manifest.yaml        → len(segments) == 2
+  # Service manifests at <tenant>/<service>/<instance>/... → len(segments) == 4
+  templatePatch: |
+    metadata:
+      {{ if gt (len .path.segments) 2 }}
+      name: '{{ .values.tenant }}-tenant-{{ index .path.segments 2 }}-{{ .values.name }}'
+      {{ else }}
+      name: '{{ .values.tenant }}-tenant'
+      {{ end }}
+      namespace: argo-cd
+    spec:
+      destination:
+        name: in-cluster
+        {{ if gt (len .path.segments) 2 }}
+        namespace: '{{ .values.tenant }}-tenant-{{ index .path.segments 2 }}-{{ .values.name }}'
+        {{ else }}
+        namespace: '{{ .values.tenant }}-tenant'
+        {{ end }}

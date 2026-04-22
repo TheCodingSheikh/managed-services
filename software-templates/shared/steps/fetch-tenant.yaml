@@ -1,0 +1,5 @@
+id: fetch-tenant
+name: Fetch Tenant Details
+action: catalog:fetch
+input:
+  entityRef: ${{ parameters.tenant }}
