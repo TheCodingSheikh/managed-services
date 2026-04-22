@@ -36,9 +36,10 @@ spec:
         name: in-cluster
         namespace: placeholder
       syncPolicy:
-        # automated:
-        #   prune: true
-        #   selfHeal: true
+        automated:
+          allowEmpty: true
+          prune: true
+          selfHeal: true
         managedNamespaceMetadata:
           labels:
             capsule.clastix.io/tenant: "{{ .values.tenant }}"
