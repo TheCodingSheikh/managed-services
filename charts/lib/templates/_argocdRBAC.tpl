@@ -1,7 +1,9 @@
 {{/*
-lib.argocdRBAC — always emits 3 ArgoCD roles (admin / edit / view) with a
-matching binding each. The binding's subject is the Keycloak client role of
-the same name, so Keycloak role membership drives ArgoCD access.
+lib.argocdRBAC — 3 ArgoCD roles (admin/edit/view) per tenant.
+
+Each role's objects match every Application whose name starts with the tenant
+release name, so one role covers the tenant app and every service under it.
+Bindings' sso subjects are the Keycloak client roles of the same name.
 */}}
 
 {{- define "lib.argocdRBAC" -}}
@@ -17,16 +19,23 @@ apiVersion: rbac-operator.argoproj-labs.io/v1alpha1
 kind: ArgoCDRole
 metadata:
   name: {{ $name }}
+  annotations:
+    {{- include "lib.argocdAnnotations" $ | nindent 4 }}
 spec:
   rules:
     - resource: applications
       verbs: {{ $verbs | toJson }}
-      objects: ["managed-services/{{ $.Release.Name }}"]
+      objects: ["managed-services/{{ $.Release.Name }}*"]
+    - resource: logs
+      verbs: ["get"]
+      objects: ["managed-services/{{ $.Release.Name }}*"]
 ---
 apiVersion: rbac-operator.argoproj-labs.io/v1alpha1
 kind: ArgoCDRoleBinding
 metadata:
   name: {{ $name }}
+  annotations:
+    {{- include "lib.argocdAnnotations" $ | nindent 4 }}
 spec:
   subjects:
     - kind: sso

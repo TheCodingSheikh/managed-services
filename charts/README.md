@@ -22,8 +22,9 @@ Helpers included by every service chart:
 | `lib.labels`          | Common labels (`app.kubernetes.io/*`, `part-of: managed-services`).     |
 | `lib.selectorLabels`  | Immutable selector labels.                                              |
 | `lib.argocdAnnotations` | ArgoCD tracking annotation for Flux-managed resources.                |
-| `lib.argocdRBAC`      | 3 fixed ArgoCD roles (`admin`/`edit`/`view`) + 3 bindings per release. Bindings' subjects are the matching Keycloak client role of the same name. |
-| `lib.keycloakRBAC`    | 3 fixed Keycloak client roles (matching the ArgoCD role names) + one Roles mapping per owner, linking their user/group to their role's client role. |
+| `lib.argocdRBAC`      | 3 ArgoCD roles (`admin`/`edit`/`view`) + 3 bindings. Objects match `managed-services/<release>*`, so the tenant's roles also cover every service released under it. |
+| `lib.vaultRBAC`       | 3 Vault policies (same levels) granting access under `<release>/*`. Uses Crossplane's Vault provider by default — adjust the `apiVersion` if you use a different one. |
+| `lib.keycloakRBAC`    | 6 Keycloak client roles (3 per client: `lab-argo-cd-client`, `lab-vault-client`), plus one Roles mapping per owner per client that links their user/group to the role matching their role field. |
 
 Use them from a chart's `rbac.yaml`:
 
@@ -31,7 +32,11 @@ Use them from a chart's `rbac.yaml`:
 {{- include "lib.argocdRBAC"   . }}
 ---
 {{- include "lib.keycloakRBAC" . }}
+---
+{{- include "lib.vaultRBAC"    . }}
 ```
+
+Only the tenant chart needs this today — the wildcard matching in ArgoCD objects and Vault paths means the tenant's role set automatically covers every service inside it.
 
 ## Adding a chart
 

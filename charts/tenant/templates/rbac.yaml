@@ -1,3 +1,5 @@
 {{- include "lib.argocdRBAC"   . }}
 ---
 {{- include "lib.keycloakRBAC" . }}
+---
+{{- include "lib.vaultRBAC"    . }}
