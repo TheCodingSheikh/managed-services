@@ -23,7 +23,7 @@ Helpers included by every service chart:
 | `lib.selectorLabels`  | Immutable selector labels.                                              |
 | `lib.argocdAnnotations` | ArgoCD tracking annotation for Flux-managed resources.                |
 | `lib.argocdRBAC`      | 3 ArgoCD roles (`admin`/`edit`/`view`) + 3 bindings. Objects match `managed-services/<release>*`, so the tenant's roles also cover every service released under it. |
-| `lib.vaultRBAC`       | 3 Vault policies (same levels) granting access under `<release>/*`. Uses Crossplane's Vault provider by default — adjust the `apiVersion` if you use a different one. |
+| `lib.vaultRBAC`       | 3 Vault policies (same levels) granting access under `<release>/*`. Uses upbound's Vault provider (`vault.vault.upbound.io/v1alpha1`) — adjust the `apiVersion` if you use a different one. |
 | `lib.keycloakRBAC`    | 6 Keycloak client roles (3 per client: `lab-argo-cd-client`, `lab-vault-client`), plus one Roles mapping per owner per client that links their user/group to the role matching their role field. |
 
 Use them from a chart's `rbac.yaml`:
