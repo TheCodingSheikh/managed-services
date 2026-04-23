@@ -46,6 +46,7 @@ metadata:
     {{- include "lib.argocdAnnotations" $ | nindent 4 }}
 spec:
   forProvider:
+    exhaustive: false
     realmIdRef: {name: lab-realm}
     roleIdsRefs:
       - name: {{ $.Release.Name }}-{{ $system }}-{{ $owner.role }}
