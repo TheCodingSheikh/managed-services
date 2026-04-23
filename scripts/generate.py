@@ -76,6 +76,8 @@ spec:
                 namespace: {repo_name}
               interval: 5m
           interval: 15m
+          driftDetection:
+            mode: enabled
           values: ${{schema.spec.values}}
           install:
             remediation:
