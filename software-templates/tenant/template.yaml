@@ -31,7 +31,7 @@ spec:
           ui:options:
             watchField: tenant
             apiPath: proxy/k8s/managedservices.thecodingsheikh.io/v1alpha1/tenants
-            jmesPath: "items[?metadata.name == '{{ value }}']"
+            jmesPath: "items[?metadata.name == '{{ value }}-tenant']"
             errorMessage: "Tenant '{{ value }}' is already in use"
     - title: Owners
       required:

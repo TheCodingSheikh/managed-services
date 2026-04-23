@@ -40,7 +40,7 @@ spec:
             validationType: api
             # CHECK: Check the correct plural name from the CRD
             apiPath: proxy/k8s/__API_GROUP__/v1alpha1/__SERVICE_PLURAL__
-            jmesPath: "items[?metadata.name == '{{ value }}']"
+            jmesPath: "items[?metadata.name == '{{ value }}-__SERVICE_NAME__']"
             errorMessage: "__SERVICE_TITLE__ '{{ value }}' is already in use"
 
     # TODO: add service-specific parameters matching charts/__SERVICE_NAME__/values.schema.json
