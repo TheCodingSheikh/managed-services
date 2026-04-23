@@ -37,7 +37,7 @@ spec:
           ui:field: ScaffolderFieldValidator
           ui:options:
             watchField: name
-            validationType: api
+            skipIfUnchanged: true
             # CHECK: Check the correct plural name from the CRD
             apiPath: proxy/k8s/__API_GROUP__/v1alpha1/__SERVICE_PLURAL__
             jmesPath: "items[?metadata.name == '{{ value }}-__SERVICE_NAME__']"
