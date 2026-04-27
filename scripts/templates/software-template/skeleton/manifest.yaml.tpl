@@ -34,11 +34,11 @@ metadata:
     app.kubernetes.io/instance: '${{ values.tenant }}-tenant-${{ values.params.name }}-__SERVICE_NAME__'
 spec:
   values:
-    # ALWAYS quote string-typed substitutions ("${{ ... }}") so values like "1"
-    # don't get YAML-coerced to int and fail values.schema.json validation.
-    # Leave numbers/booleans unquoted (e.g. replicas: ${{ values.params.replicas }}).
+    # ALWAYS use the `| quote` filter on string-typed substitutions so values
+    # like "1" don't get YAML-coerced to int and fail values.schema.json
+    # validation. Leave numbers/booleans bare (e.g. replicas: ${{ values.params.replicas }}).
     # `values.tenant` is the resolved short tenant name (set by fetch-template.yaml);
     # `values.params.tenant` is still the raw EntityPicker ref — don't use it here.
-    tenant: "${{ values.tenant }}"
-    name: "${{ values.params.name }}"
+    tenant: ${{ values.tenant | quote }}
+    name: ${{ values.params.name | quote }}
     # TODO: add fields matching charts/__SERVICE_NAME__/values.schema.json
