@@ -33,27 +33,27 @@ metadata:
     app.kubernetes.io/instance: '${{ values.tenant }}-tenant-${{ values.params.name }}-webapp'
 spec:
   values:
-    tenant: ${{ values.tenant | quote }}
-    name: ${{ values.params.name | quote }}
-    image: ${{ values.params.image | quote }}
+    tenant: ${{ values.tenant }}
+    name: ${{ values.params.name }}
+    image: ${{ values.params.image }}
     replicas: ${{ values.params.replicas }}
     port: ${{ values.params.port }}
-    host: ${{ values.params.host | quote }}
+    host: ${{ values.params.host }}
     {%- if values.params.env %}
     env:
       {%- for e in values.params.env %}
-      - name: ${{ e.name | quote }}
-        value: ${{ e.value | quote }}
+      - name: ${{ e.name }}
+        value: ${{ e.value }}
       {%- endfor %}
     {%- endif %}
     {%- if values.params.envFromSecrets %}
     envFromSecrets:
       {%- for s in values.params.envFromSecrets %}
-      - ${{ s | quote }}
+      - ${{ s }}
       {%- endfor %}
     {%- endif %}
     resources:
-      cpu: ${{ values.params.resources.cpu | quote }}
-      memory: ${{ values.params.resources.memory | quote }}
-      cpuLimit: ${{ values.params.resources.cpuLimit | quote }}
-      memoryLimit: ${{ values.params.resources.memoryLimit | quote }}
+      cpu: ${{ values.params.resources.cpu }}
+      memory: ${{ values.params.resources.memory }}
+      cpuLimit: ${{ values.params.resources.cpuLimit }}
+      memoryLimit: ${{ values.params.resources.memoryLimit }}
