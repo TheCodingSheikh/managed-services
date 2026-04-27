@@ -62,7 +62,9 @@ spec:
             {{ else }}
             app.kubernetes.io/instance: '{{ .values.tenant }}-tenant'
             {{ end }}
+            {{ if gt (len .path.segments) 1 }}
             capsule.clastix.io/tenant: "{{ .values.tenant }}-tenant"
+            {{ end }}
       destination:
         name: in-cluster
         {{ if gt (len .path.segments) 1 }}
