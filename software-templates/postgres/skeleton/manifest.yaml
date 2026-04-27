@@ -11,7 +11,6 @@ metadata:
     lab.backstage.io/title: ${{ values.tenant | replace("-", " ") | title }} Tenant ${{ values.params.name | replace("-", " ") | title }} Postgres
     lab.backstage.io/name: ${{ values.tenant }}-tenant-${{ values.params.name }}-postgres
     lab.backstage.io/system: postgres
-    lab.backstage.io/owners: '{% for owner in values.owners %}${{ owner.subject }}:${{ owner.role }}{% if not loop.last %},{% endif %}{%- endfor %}'
     lab.backstage.io/kubernetes-label-selector: 'app.kubernetes.io/instance=${{ values.tenant }}-tenant-${{ values.params.name }}-postgres'
     lab.backstage.io/links: |-
       [

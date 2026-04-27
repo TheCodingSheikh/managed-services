@@ -22,5 +22,7 @@ spec:
     additionalMetadataList:
       - labels:
           pod-security.kubernetes.io/enforce: baseline
+        annotations:
+          lab.backstage.io/owners: "{{- range $i, $o := .Values.owners }}{{ if $i }},{{ end }}{{ $o.subject }}:{{ $o.role }}{{- end }}"
   ingressOptions:
     hostnameCollisionScope: Cluster

@@ -118,7 +118,6 @@ spec:
               default: "512Mi"
 
   steps:
-    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-tenant.yaml
     - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-template.yaml
     - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/push-manifest.yaml
 

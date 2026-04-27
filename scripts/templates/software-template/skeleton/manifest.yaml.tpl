@@ -12,7 +12,6 @@ metadata:
     lab.backstage.io/title: ${{ values.tenant | replace("-", " ") | title }} Tenant ${{ values.params.name | replace("-", " ") | title }} __SERVICE_TITLE__
     lab.backstage.io/name: ${{ values.tenant }}-tenant-${{ values.params.name }}-__SERVICE_NAME__
     lab.backstage.io/system: __SERVICE_NAME__
-    lab.backstage.io/owners: '{% for owner in values.owners %}${{ owner.subject }}:${{ owner.role }}{% if not loop.last %},{% endif %}{%- endfor %}'
     lab.backstage.io/kubernetes-label-selector: 'app.kubernetes.io/instance=${{ values.tenant }}-tenant-${{ values.params.name }}-__SERVICE_NAME__'
     # TODO: optional — surface the running endpoint(s) in the Backstage entity.
     # YAML "|-" block style keeps the JSON readable; "{%- if ... %}" blocks add

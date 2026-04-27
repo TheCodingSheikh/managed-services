@@ -46,7 +46,6 @@ spec:
     # TODO: add service-specific parameters matching charts/__SERVICE_NAME__/values.schema.json
 
   steps:
-    - $yaml: __TEMPLATE_BASE_URL__/software-templates/shared/steps/fetch-tenant.yaml
     - $yaml: __TEMPLATE_BASE_URL__/software-templates/shared/steps/fetch-template.yaml
     - $yaml: __TEMPLATE_BASE_URL__/software-templates/shared/steps/push-manifest.yaml
 

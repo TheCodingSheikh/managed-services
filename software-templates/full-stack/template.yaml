@@ -183,7 +183,6 @@ spec:
                     enum: [host, port, user, password, dbname, uri, jdbc-uri, verifier]
 
   steps:
-    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-tenant.yaml
     - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-template.yaml
     - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/push-manifest.yaml
 
