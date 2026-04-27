@@ -1,0 +1,29 @@
+apiVersion: managedservices.thecodingsheikh.io/v1alpha1
+kind: Postgres
+metadata:
+  name: {{ include "lib.fullname" . }}-db
+  labels:
+    {{- include "lib.labels" . | nindent 4 }}
+  annotations:
+    {{- include "lib.argocdAnnotations" . | nindent 4 }}
+spec:
+  values:
+    tenant: {{ .Values.tenant | quote }}
+    name: {{ .Values.name }}-db
+    version: {{ .Values.postgres.version }}
+    replicas: {{ .Values.postgres.replicas }}
+    storageSize: {{ .Values.postgres.storageSize | quote }}
+    storageClass: {{ .Values.postgres.storageClass | quote }}
+    resources:
+      cpu: {{ .Values.postgres.resources.cpu | quote }}
+      memory: {{ .Values.postgres.resources.memory | quote }}
+      cpuLimit: {{ .Values.postgres.resources.cpuLimit | quote }}
+      memoryLimit: {{ .Values.postgres.resources.memoryLimit | quote }}
+    backups:
+      enabled: {{ .Values.postgres.backups.enabled }}
+      schedule: {{ .Values.postgres.backups.schedule | quote }}
+      retention: {{ .Values.postgres.backups.retention }}
+    users:
+      - name: {{ .Values.db.user | quote }}
+        databases:
+          - {{ .Values.db.database | quote }}

@@ -1,0 +1,18 @@
+apiVersion: v2
+name: full-stack
+description: Managed Full Stack service
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - full-stack
+  - managed-service
+home: https://github.com/thecodingsheikh/managed-services
+sources:
+  - https://github.com/thecodingsheikh/managed-services
+maintainers:
+  - name: Platform Team
+dependencies:
+  - name: lib
+    version: "0.0.0"
+    repository: "file://../lib"

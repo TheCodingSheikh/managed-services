@@ -19,39 +19,53 @@ And three layers inside the cluster:
 
 ## Diagram
 
+```mermaid
+flowchart TB
+    subgraph Backstage["Developer Portal (Backstage)"]
+        direction TB
+        ST["<b>Software Template</b><br/><i>params from values.schema.json</i>"]
+        Cat["<b>Catalog</b> <i>(ingested from cluster)</i>"]
+    end
+
+    Releases["<b>managed-services-releases</b> (Git)"]
+
+    subgraph Cluster["Kubernetes Cluster"]
+        direction LR
+        CR["Domain CR<br/><i>Tenant, Postgres…</i>"] --> RGD["KRO RGD"]
+        RGD --> HR["Flux HelmRelease"]
+        HR --> HC["Helm chart"]
+        HC --> Out["Capsule Tenant <i>(isolation)</i><br/>ArgoCD roles<br/>Keycloak roles<br/>Vault policies<br/>…your workloads"]
+    end
+
+    Backstage -- "pull request" --> Releases
+    Releases -- "ArgoCD syncs" --> Cluster
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         Developer Portal (Backstage)                    │
-│                                                                         │
-│   Software Template (parameters from values.schema.json)                │
-│     ├─ scaffolder-field-validator  "is this name already taken?"        │
-│     └─ entity-scaffolder           edit an existing CR via the form     │
-│                                                                         │
-│   Catalog (ingested from the cluster)                                   │
-│     ├─ catalog-backend-module-kubernetes   CRs → Backstage entities     │
-│     └─ multi-owner (+ processor)           multiple owners, with roles  │
-└───────────────────────────────────┬─────────────────────────────────────┘
-                                    │ pull request
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    managed-services-releases (Git)                      │
-│                                                                         │
-│   <tenant>/manifest.yaml                      ← Tenant CR               │
-│   <tenant>/<service>/<name>/manifest.yaml     ← Service CR              │
-└───────────────────────────────────┬─────────────────────────────────────┘
-                                    │ ArgoCD syncs
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                          Kubernetes Cluster                             │
-│                                                                         │
-│   Domain CR  ──▶  KRO RGD  ──▶  Flux HelmRelease  ──▶  Helm chart       │
-│                                                          │              │
-│                                                          ▼              │
-│                                           Capsule Tenant (isolation)    │
-│                                           ArgoCD roles   (per owner)    │
-│                                           Keycloak roles (per owner)    │
-│                                           …your workloads               │
-└─────────────────────────────────────────────────────────────────────────┘
+
+## Tenancy model
+
+A **tenant** is the unit of isolation and identity. Every service lives inside exactly one tenant.
+
+The tenant owns the identity: owners, roles, and permissions are defined once at the tenant level. Service instances inherit them — they don't define their own.
+
+```mermaid
+flowchart TB
+    Owners["Owners"]
+
+    subgraph T["Tenant"]
+        direction TB
+        Roles["<b>Roles</b> <i>(admin / edit / view)</i>"]
+
+        subgraph Instances["Services"]
+            direction LR
+            I1["postgres"]
+            I2["redis"]
+            I3["…"]
+        end
+
+        Roles -. "cover all services<br/>in the tenant" .-> Instances
+    end
+
+    Owners -- "mapped to roles" --> Roles
 ```
 
 ## Backstage plugins
@@ -117,6 +131,76 @@ Then customize four files in sync:
 | `charts/postgres/templates/` | Kubernetes resources that consume those values |
 | `software-templates/postgres/template.yaml` | Form parameters matching the schema |
 | `software-templates/postgres/skeleton/manifest.yaml` | Map form input → CR body |
+
+## Composing services
+
+A *composite* service (e.g. `full-stack` = webapp + postgres) is just another managed service whose chart emits **child Domain CRs** instead of low-level Kubernetes resources. Each child has its own KRO RGD that takes over from there, so the composite chart never touches Deployments, StatefulSets, Services, etc. directly.
+
+```mermaid
+flowchart LR
+    Parent["FullStack CR"] --> ParentRGD["KRO RGD<br/>(full-stack)"]
+    ParentRGD --> ParentHR["Flux HelmRelease"]
+    ParentHR --> ParentChart["charts/full-stack"]
+    ParentChart -->|emits| ChildA["Webapp CR"]
+    ParentChart -->|emits| ChildB["Postgres CR"]
+    ChildA --> ChildARGD["KRO RGD (webapp)"] --> ChildAHR["webapp HelmRelease"]
+    ChildB --> ChildBRGD["KRO RGD (postgres)"] --> ChildBHR["postgres HelmRelease"]
+```
+
+### Recipe
+
+1. **Scaffold** — `make new SERVICE=<name>`. Treat it like any other service.
+2. **Schema (`charts/<name>/values.schema.json`)** — embed each child's schema under a named key. Mirror the child's `values.schema.json` exactly under that key; only the top-level `tenant`/`name` are stripped (those come from the parent). Example:
+   ```json
+   {
+     "type": "object",
+     "required": ["tenant", "name", "webapp"],
+     "properties": {
+       "tenant": { "type": "string" },
+       "name":   { "type": "string" },
+       "webapp":   { "type": "object", "properties": { "image": {...}, "replicas": {...} } },
+       "postgres": { "type": "object", "properties": { "version": {...}, "backups": {...} } }
+     }
+   }
+   ```
+   - **Don't `$ref` the children's schemas** — values.schema.json is consumed by Helm + Backstage offline; copy the relevant subtree (or the whole thing) under the child's key.
+   - **Required at the parent**: only fields that *must* be supplied at composition time. Optional sub-objects should default to `{}` so children's own defaults apply.
+   - **Naming**: pick keys that match the child's chart name (`webapp`, `postgres`) so the chart template reads naturally.
+
+3. **Defaults (`charts/<name>/values.yaml`)** — provide a sensible default for every nested field. The form will use these.
+
+4. **Chart templates (`charts/<name>/templates/*.yaml`)** — emit one child CR per file. Append a role suffix directly to `lib.fullname` so siblings don't collide:
+   ```yaml
+   apiVersion: managedservices.thecodingsheikh.io/v1alpha1
+   kind: Webapp
+   metadata:
+     name: {{ include "lib.fullname" . }}-app
+   spec:
+     values:
+       tenant: {{ .Values.tenant | quote }}
+       name: {{ .Values.name }}-app
+       # passthrough — every child key from values.schema.json
+       image: {{ .Values.webapp.image | quote }}
+       replicas: {{ .Values.webapp.replicas }}
+   ```
+   Two rules:
+   - **One file per child** — keeps the dependency graph readable.
+   - **Don't add `lab.backstage.io/*` annotations on child CRs** — only the parent should appear in the catalog. Otherwise you get duplicate entries.
+
+5. **Wire children together** — the whole point of a composite is that children share state. Two patterns:
+   - **Secret reference** (preferred): pass the producer's secret name into the consumer. Example: `full-stack` injects the Crunchy `<db>-pguser-<db>` secret into the webapp via `envFromSecrets`.
+   - **DNS reference**: hardcode `<sibling>.<namespace>.svc.cluster.local` since both children land in the parent's namespace.
+
+6. **Form (`software-templates/<name>/template.yaml`)** — group fields into one section per child (`Webapp Tier`, `Database Tier`, …). Reuse the same field titles, defaults, validators as the child's standalone form.
+
+7. **Skeleton (`.../skeleton/manifest.yaml`)** — emit the parent CR. The `spec.values` block is a flat passthrough of `values.params.*` from the form, organized to match the schema.
+
+### Pitfalls
+
+- **Empty arrays render as `null`** in skeleton manifests: guard with `{%- if values.params.foo %}…{%- endif %}` and in chart templates with `{{- with .Values.foo }}…{{- end }}`. A child schema saying `type: array` will reject `null`.
+- **Don't sub-chart** (Helm `dependencies:`) the children. KRO + Flux handle the orchestration; sub-charting would render the child resources inline and bypass the per-child RGD.
+- **Naming collisions**: parent + child fullnames must stay under 63 chars. Suffixes like `-app`/`-db` are fine; long instance names + long tenant names can blow the limit.
+- **Don't duplicate validation in the parent schema**: if `webapp.replicas` already has `minimum: 1, maximum: 20` in the webapp schema, copy it once into the parent — adding it again with different bounds creates drift.
 
 ## Forking
 

@@ -1,0 +1,133 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Full Stack Configuration",
+  "description": "Webapp + Postgres bundled together, Beanstalk-style",
+  "type": "object",
+  "required": ["tenant", "name", "webapp"],
+  "properties": {
+    "tenant": {
+      "type": "string",
+      "description": "Owning tenant name",
+      "pattern": "^([a-z][a-z0-9-]*)?$",
+      "maxLength": 63
+    },
+    "name": {
+      "type": "string",
+      "description": "Full Stack instance name",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "minLength": 1,
+      "maxLength": 63
+    },
+    "webapp": {
+      "type": "object",
+      "description": "Webapp tier settings",
+      "required": ["image"],
+      "properties": {
+        "image":    { "type": "string", "minLength": 1 },
+        "replicas": { "type": "integer", "minimum": 1, "maximum": 20, "default": 2 },
+        "port":     { "type": "integer", "minimum": 1, "maximum": 65535, "default": 8080 },
+        "host":     { "type": "string", "default": "" },
+        "env": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "object",
+            "required": ["name", "value"],
+            "properties": {
+              "name":  { "type": "string", "minLength": 1 },
+              "value": { "type": "string" }
+            }
+          }
+        },
+        "resources": {
+          "type": "object",
+          "default": {},
+          "properties": {
+            "cpu":         { "type": "string", "default": "100m" },
+            "memory":      { "type": "string", "default": "128Mi" },
+            "cpuLimit":    { "type": "string", "default": "500m" },
+            "memoryLimit": { "type": "string", "default": "512Mi" }
+          }
+        }
+      }
+    },
+    "postgres": {
+      "type": "object",
+      "description": "Database tier settings",
+      "default": {},
+      "properties": {
+        "version":      { "type": "integer", "enum": [13, 14, 15, 16], "default": 16 },
+        "replicas":     { "type": "integer", "minimum": 1, "maximum": 5, "default": 1 },
+        "storageSize":  { "type": "string", "pattern": "^[0-9]+(Mi|Gi|Ti)$", "default": "10Gi" },
+        "storageClass": { "type": "string", "default": "" },
+        "resources": {
+          "type": "object",
+          "default": {},
+          "properties": {
+            "cpu":         { "type": "string", "default": "250m" },
+            "memory":      { "type": "string", "default": "512Mi" },
+            "cpuLimit":    { "type": "string", "default": "1" },
+            "memoryLimit": { "type": "string", "default": "2Gi" }
+          }
+        },
+        "backups": {
+          "type": "object",
+          "default": {},
+          "properties": {
+            "enabled":   { "type": "boolean", "default": true },
+            "schedule":  { "type": "string", "default": "0 1 * * 0" },
+            "retention": { "type": "integer", "minimum": 1, "maximum": 30, "default": 7 }
+          }
+        }
+      }
+    },
+    "db": {
+      "type": "object",
+      "description": "Wiring between webapp and postgres: which user/db to provision, and how its credentials are exposed as env vars in the webapp container.",
+      "default": {},
+      "properties": {
+        "user": {
+          "type": "string",
+          "description": "Postgres user the webapp connects as",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "default": "app"
+        },
+        "database": {
+          "type": "string",
+          "description": "Postgres database the webapp connects to",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "default": "app"
+        },
+        "envVars": {
+          "type": "array",
+          "description": "Map Crunchy pguser secret keys onto env vars in the webapp container",
+          "default": [
+            { "name": "DATABASE_URL", "secretKey": "uri" },
+            { "name": "DB_HOST",     "secretKey": "host" },
+            { "name": "DB_PORT",     "secretKey": "port" },
+            { "name": "DB_USER",     "secretKey": "user" },
+            { "name": "DB_PASSWORD", "secretKey": "password" },
+            { "name": "DB_NAME",     "secretKey": "dbname" }
+          ],
+          "items": {
+            "type": "object",
+            "required": ["name", "secretKey"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Env var name in the container",
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+                "minLength": 1
+              },
+              "secretKey": {
+                "type": "string",
+                "description": "Key on the Crunchy pguser secret",
+                "enum": ["host", "port", "user", "password", "dbname", "uri", "jdbc-uri", "verifier"]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

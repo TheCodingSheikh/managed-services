@@ -1,0 +1,129 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: webapp
+  title: Managed Webapp
+  description: Create a managed Webapp instance
+  tags:
+    - webapp
+    - kubernetes
+    - managed-service
+spec:
+  owner: platform-team
+  type: service
+
+  parameters:
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/parameters/tenant-selector.yaml
+
+    - title: Webapp Configuration
+      required:
+        - name
+        - image
+      properties:
+        serviceType:
+          type: string
+          default: webapp
+          ui:widget: hidden
+        name:
+          title: Instance Name
+          type: string
+          description: Unique name (lowercase, alphanumeric with dashes)
+          pattern: "^[a-z][a-z0-9-]*$"
+          minLength: 1
+          maxLength: 63
+          ui:autofocus: true
+        nameValidator:
+          type: string
+          ui:field: ScaffolderFieldValidator
+          ui:options:
+            watchField: name
+            skipIfUnchanged: true
+            apiPath: proxy/k8s/managedservices.thecodingsheikh.io/v1alpha1/webapps
+            jmesPath: "items[?metadata.name == '{{ value }}-webapp']"
+            errorMessage: "Webapp '{{ value }}' is already in use"
+        image:
+          title: Container Image
+          type: string
+          description: Image reference, e.g. nginx:1.27 or ghcr.io/org/app:v1.2.3
+          default: nginx:1.27
+          minLength: 1
+        replicas:
+          title: Replicas
+          type: integer
+          description: Number of pod replicas
+          default: 2
+          minimum: 1
+          maximum: 20
+        port:
+          title: Container Port
+          type: integer
+          description: Port the app listens on inside the container
+          default: 8080
+          minimum: 1
+          maximum: 65535
+        host:
+          title: Ingress Hostname
+          type: string
+          description: Leave blank for cluster-internal only
+          default: ""
+
+    - title: Runtime
+      properties:
+        env:
+          title: Environment Variables
+          type: array
+          default: []
+          ui:options:
+            orderable: true
+          items:
+            type: object
+            required:
+              - name
+              - value
+            properties:
+              name:
+                title: Name
+                type: string
+                minLength: 1
+              value:
+                title: Value
+                type: string
+        envFromSecrets:
+          title: Inject Secret(s) as env
+          type: array
+          description: Secret names. All keys are exposed as env vars (envFrom).
+          default: []
+          items:
+            type: string
+            minLength: 1
+        resources:
+          title: Resources
+          type: object
+          properties:
+            cpu:
+              title: CPU Request
+              type: string
+              default: "100m"
+            memory:
+              title: Memory Request
+              type: string
+              default: "128Mi"
+            cpuLimit:
+              title: CPU Limit
+              type: string
+              default: "500m"
+            memoryLimit:
+              title: Memory Limit
+              type: string
+              default: "512Mi"
+
+  steps:
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-tenant.yaml
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-template.yaml
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/push-manifest.yaml
+
+  output:
+    text:
+      - title: Webapp Created
+        content: |
+          Your Webapp instance is being created.

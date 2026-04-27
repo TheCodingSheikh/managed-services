@@ -1,0 +1,140 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: postgres
+  title: Managed Postgres
+  description: Create a managed Postgres instance (Crunchy PGO)
+  tags:
+    - postgres
+    - database
+    - kubernetes
+    - managed-service
+spec:
+  owner: platform-team
+  type: service
+
+  parameters:
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/parameters/tenant-selector.yaml
+
+    - title: Postgres Configuration
+      required:
+        - name
+      properties:
+        serviceType:
+          type: string
+          default: postgres
+          ui:widget: hidden
+        name:
+          title: Instance Name
+          type: string
+          description: Unique name (lowercase, alphanumeric with dashes)
+          pattern: "^[a-z][a-z0-9-]*$"
+          minLength: 1
+          maxLength: 63
+          ui:autofocus: true
+        nameValidator:
+          type: string
+          ui:field: ScaffolderFieldValidator
+          ui:options:
+            watchField: name
+            skipIfUnchanged: true
+            apiPath: proxy/k8s/managedservices.thecodingsheikh.io/v1alpha1/postgress
+            jmesPath: "items[?metadata.name == '{{ value }}-postgres']"
+            errorMessage: "Postgres '{{ value }}' is already in use"
+        version:
+          title: PostgreSQL Version
+          type: integer
+          default: 16
+          enum: [13, 14, 15, 16]
+          enumNames: ["13", "14", "15", "16"]
+        replicas:
+          title: Replicas
+          type: integer
+          description: 1 = single primary. >1 enables hot standbys.
+          default: 1
+          minimum: 1
+          maximum: 5
+        storageSize:
+          title: Storage Size
+          type: string
+          default: "10Gi"
+          pattern: "^[0-9]+(Mi|Gi|Ti)$"
+        storageClass:
+          title: Storage Class
+          type: string
+          description: Leave blank to use the cluster default
+          default: ""
+
+    - title: Resources
+      properties:
+        resources:
+          title: Database Pod Resources
+          type: object
+          properties:
+            cpu:          { title: CPU Request,    type: string, default: "250m" }
+            memory:       { title: Memory Request, type: string, default: "512Mi" }
+            cpuLimit:     { title: CPU Limit,      type: string, default: "1" }
+            memoryLimit:  { title: Memory Limit,   type: string, default: "2Gi" }
+
+    - title: Backups
+      properties:
+        backups:
+          title: pgBackRest
+          type: object
+          properties:
+            enabled:
+              title: Enable scheduled backups
+              type: boolean
+              default: true
+            schedule:
+              title: Cron Schedule (full backups)
+              type: string
+              default: "0 1 * * 0"
+            retention:
+              title: Keep N full backups
+              type: integer
+              default: 7
+              minimum: 1
+              maximum: 30
+
+    - title: Users
+      properties:
+        users:
+          title: Database Users
+          type: array
+          description: Each user gets a Kubernetes Secret and a Vault PushSecret
+          minItems: 1
+          default:
+            - name: app
+              databases: [app]
+          items:
+            type: object
+            required:
+              - name
+            properties:
+              name:
+                title: Username
+                type: string
+                pattern: "^[a-z][a-z0-9_]*$"
+                minLength: 1
+                maxLength: 63
+              databases:
+                title: Databases
+                type: array
+                default: [app]
+                items:
+                  type: string
+                  pattern: "^[a-z][a-z0-9_]*$"
+                  minLength: 1
+                  maxLength: 63
+
+  steps:
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-tenant.yaml
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-template.yaml
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/push-manifest.yaml
+
+  output:
+    text:
+      - title: Postgres Created
+        content: |
+          Your Postgres instance is being created.

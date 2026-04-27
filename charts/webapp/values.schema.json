@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Webapp Configuration",
+  "description": "Configuration for Managed Webapp",
+  "type": "object",
+  "required": ["tenant", "name", "image"],
+  "properties": {
+    "tenant": {
+      "type": "string",
+      "description": "Owning tenant name",
+      "pattern": "^([a-z][a-z0-9-]*)?$",
+      "maxLength": 63
+    },
+    "name": {
+      "type": "string",
+      "description": "Webapp instance name",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "minLength": 1,
+      "maxLength": 63
+    },
+    "image": {
+      "type": "string",
+      "description": "Container image reference (repo:tag)",
+      "minLength": 1
+    },
+    "replicas": {
+      "type": "integer",
+      "description": "Number of pod replicas",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 2
+    },
+    "port": {
+      "type": "integer",
+      "description": "Container port the app listens on",
+      "minimum": 1,
+      "maximum": 65535,
+      "default": 8080
+    },
+    "host": {
+      "type": "string",
+      "description": "Ingress hostname (omit to disable ingress)",
+      "default": ""
+    },
+    "env": {
+      "type": "array",
+      "description": "Environment variables. Each entry must set either value or valueFrom.",
+      "default": [],
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "value": { "type": "string" },
+          "valueFrom": {
+            "type": "object",
+            "properties": {
+              "secretKeyRef": {
+                "type": "object",
+                "required": ["name", "key"],
+                "properties": {
+                  "name": { "type": "string", "minLength": 1 },
+                  "key": { "type": "string", "minLength": 1 }
+                }
+              },
+              "configMapKeyRef": {
+                "type": "object",
+                "required": ["name", "key"],
+                "properties": {
+                  "name": { "type": "string", "minLength": 1 },
+                  "key": { "type": "string", "minLength": 1 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "envFromSecrets": {
+      "type": "array",
+      "description": "Inject all keys from these Secrets as env vars (envFrom.secretRef)",
+      "default": [],
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "resources": {
+      "type": "object",
+      "description": "Pod resource requests and limits",
+      "default": {},
+      "properties": {
+        "cpu":          { "type": "string", "default": "100m" },
+        "memory":       { "type": "string", "default": "128Mi" },
+        "cpuLimit":     { "type": "string", "default": "500m" },
+        "memoryLimit":  { "type": "string", "default": "512Mi" }
+      }
+    }
+  }
+}

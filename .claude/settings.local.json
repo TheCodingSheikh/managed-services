@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E '\\\\.\\(yaml|json|py|tpl|md\\)$')",
+      "Bash(git -C /Users/abdo/Code/managed-services status --short)",
+      "Bash(python3 scripts/generate.py __dryrun_test)",
+      "Bash(make regen-defs *)",
+      "Bash(make lint *)",
+      "Bash(helm template *)",
+      "Bash(make new *)",
+      "Bash([ -f \"$p/README.md\" ])",
+      "Bash(python3 scripts/generate.py __smoke)",
+      "Bash(python3 -c \"import yaml; yaml.safe_load\\(open\\('argocd/applicationset.yaml'\\)\\)\")",
+      "Bash(kubectl explain *)",
+      "Bash(curl -sL https://kro.run/docs/ -o /tmp/kro_docs.html)",
+      "Read(//tmp/**)",
+      "Bash(curl -sL https://kro.run/docs/overview -o /tmp/kro_overview.html)",
+      "Bash(curl -sL https://kro.run/docs/concepts/ -o /tmp/kro_concepts.html)",
+      "Bash(curl -sL https://github.com/kro-run/kro -o /tmp/kro_github.html)",
+      "WebFetch(domain:kro.run)",
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "Bash(kubectl api-resources *)",
+      "Bash(make template *)",
+      "Bash(awk '/━━━ webapp ━━━/,/━━━ postgres ━━━/')"
+    ]
+  }
+}

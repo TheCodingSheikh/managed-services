@@ -1,0 +1,43 @@
+tenant: ""
+name: my-full-stack
+webapp:
+  image: nginx:1.27
+  replicas: 2
+  port: 8080
+  host: ""
+  env: []
+  resources:
+    cpu: 100m
+    memory: 128Mi
+    cpuLimit: 500m
+    memoryLimit: 512Mi
+postgres:
+  version: 16
+  replicas: 1
+  storageSize: 10Gi
+  storageClass: ""
+  resources:
+    cpu: 250m
+    memory: 512Mi
+    cpuLimit: "1"
+    memoryLimit: 2Gi
+  backups:
+    enabled: true
+    schedule: "0 1 * * 0"
+    retention: 7
+db:
+  user: app
+  database: app
+  envVars:
+    - name: DATABASE_URL
+      secretKey: uri
+    - name: DB_HOST
+      secretKey: host
+    - name: DB_PORT
+      secretKey: port
+    - name: DB_USER
+      secretKey: user
+    - name: DB_PASSWORD
+      secretKey: password
+    - name: DB_NAME
+      secretKey: dbname

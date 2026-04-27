@@ -1,0 +1,35 @@
+apiVersion: managedservices.thecodingsheikh.io/v1alpha1
+kind: Webapp
+metadata:
+  name: {{ include "lib.fullname" . }}-app
+  labels:
+    {{- include "lib.labels" . | nindent 4 }}
+  annotations:
+    {{- include "lib.argocdAnnotations" . | nindent 4 }}
+spec:
+  values:
+    tenant: {{ .Values.tenant | quote }}
+    name: {{ .Values.name }}-app
+    image: {{ .Values.webapp.image | quote }}
+    replicas: {{ .Values.webapp.replicas }}
+    port: {{ .Values.webapp.port }}
+    host: {{ .Values.webapp.host | quote }}
+    {{- if or .Values.webapp.env .Values.db.envVars }}
+    env:
+      {{- range .Values.webapp.env }}
+      - name: {{ .name | quote }}
+        value: {{ .value | quote }}
+      {{- end }}
+      {{- range .Values.db.envVars }}
+      - name: {{ .name | quote }}
+        valueFrom:
+          secretKeyRef:
+            name: {{ include "lib.fullname" $ }}-db-pguser-{{ $.Values.db.user }}
+            key: {{ .secretKey | quote }}
+      {{- end }}
+    {{- end }}
+    resources:
+      cpu: {{ .Values.webapp.resources.cpu | quote }}
+      memory: {{ .Values.webapp.resources.memory | quote }}
+      cpuLimit: {{ .Values.webapp.resources.cpuLimit | quote }}
+      memoryLimit: {{ .Values.webapp.resources.memoryLimit | quote }}

@@ -1,0 +1,19 @@
+tenant: ""
+name: my-postgres
+version: 16
+replicas: 1
+storageSize: 10Gi
+storageClass: ""
+resources:
+  cpu: 250m
+  memory: 512Mi
+  cpuLimit: "1"
+  memoryLimit: 2Gi
+backups:
+  enabled: true
+  schedule: "0 1 * * 0"
+  retention: 7
+users:
+  - name: app
+    databases:
+      - app

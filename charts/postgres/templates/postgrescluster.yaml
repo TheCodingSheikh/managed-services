@@ -1,0 +1,77 @@
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: {{ include "lib.fullname" . }}
+  labels:
+    {{- include "lib.labels" . | nindent 4 }}
+  annotations:
+    {{- include "lib.argocdAnnotations" . | nindent 4 }}
+spec:
+  postgresVersion: {{ .Values.version }}
+  instances:
+    - name: instance1
+      replicas: {{ .Values.replicas }}
+      dataVolumeClaimSpec:
+        accessModes:
+          - ReadWriteOnce
+        {{- if .Values.storageClass }}
+        storageClassName: {{ .Values.storageClass | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.storageSize | quote }}
+      resources:
+        requests:
+          cpu: {{ .Values.resources.cpu | default "250m" | quote }}
+          memory: {{ .Values.resources.memory | default "512Mi" | quote }}
+        limits:
+          cpu: {{ .Values.resources.cpuLimit | default "1" | quote }}
+          memory: {{ .Values.resources.memoryLimit | default "2Gi" | quote }}
+  backups:
+    pgbackrest:
+      {{- if .Values.backups.enabled }}
+      manual:
+        repoName: repo1
+        options:
+          - --type=full
+      repos:
+        - name: repo1
+          schedules:
+            full: {{ .Values.backups.schedule | quote }}
+          volume:
+            volumeClaimSpec:
+              accessModes:
+                - ReadWriteOnce
+              {{- if .Values.storageClass }}
+              storageClassName: {{ .Values.storageClass | quote }}
+              {{- end }}
+              resources:
+                requests:
+                  storage: {{ .Values.storageSize | quote }}
+      global:
+        repo1-retention-full: {{ .Values.backups.retention | quote }}
+        repo1-retention-full-type: count
+      {{- else }}
+      repos:
+        - name: repo1
+          volume:
+            volumeClaimSpec:
+              accessModes:
+                - ReadWriteOnce
+              {{- if .Values.storageClass }}
+              storageClassName: {{ .Values.storageClass | quote }}
+              {{- end }}
+              resources:
+                requests:
+                  storage: {{ .Values.storageSize | quote }}
+      {{- end }}
+  users:
+    {{- range .Values.users }}
+    - name: {{ .name | quote }}
+      {{- with .databases }}
+      databases:
+        {{- range . }}
+        - {{ . | quote }}
+        {{- end }}
+      {{- end }}
+    {{- end }}

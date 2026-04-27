@@ -1,0 +1,194 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: full-stack
+  title: Managed Full Stack
+  description: Webapp + Postgres bundled together, Beanstalk-style
+  tags:
+    - full-stack
+    - webapp
+    - postgres
+    - kubernetes
+    - managed-service
+spec:
+  owner: platform-team
+  type: service
+
+  parameters:
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/parameters/tenant-selector.yaml
+
+    - title: Full Stack Configuration
+      required:
+        - name
+      properties:
+        serviceType:
+          type: string
+          default: full-stack
+          ui:widget: hidden
+        name:
+          title: Instance Name
+          type: string
+          description: Unique name (lowercase, alphanumeric with dashes)
+          pattern: "^[a-z][a-z0-9-]*$"
+          minLength: 1
+          maxLength: 63
+          ui:autofocus: true
+        nameValidator:
+          type: string
+          ui:field: ScaffolderFieldValidator
+          ui:options:
+            watchField: name
+            skipIfUnchanged: true
+            apiPath: proxy/k8s/managedservices.thecodingsheikh.io/v1alpha1/full-stacks
+            jmesPath: "items[?metadata.name == '{{ value }}-full-stack']"
+            errorMessage: "Full Stack '{{ value }}' is already in use"
+
+    - title: Webapp Tier
+      required:
+        - webapp
+      properties:
+        webapp:
+          title: Webapp
+          type: object
+          required:
+            - image
+          properties:
+            image:
+              title: Container Image
+              type: string
+              default: nginx:1.27
+              minLength: 1
+            replicas:
+              title: Replicas
+              type: integer
+              default: 2
+              minimum: 1
+              maximum: 20
+            port:
+              title: Container Port
+              type: integer
+              default: 8080
+              minimum: 1
+              maximum: 65535
+            host:
+              title: Ingress Hostname
+              type: string
+              description: Leave blank for cluster-internal only
+              default: ""
+            env:
+              title: Environment Variables
+              type: array
+              default: []
+              ui:options:
+                orderable: true
+              items:
+                type: object
+                required:
+                  - name
+                  - value
+                properties:
+                  name:  { title: Name,  type: string, minLength: 1 }
+                  value: { title: Value, type: string }
+            resources:
+              title: Resources
+              type: object
+              properties:
+                cpu:         { title: CPU Request,    type: string, default: "100m" }
+                memory:      { title: Memory Request, type: string, default: "128Mi" }
+                cpuLimit:    { title: CPU Limit,      type: string, default: "500m" }
+                memoryLimit: { title: Memory Limit,   type: string, default: "512Mi" }
+
+    - title: Database Tier
+      properties:
+        postgres:
+          title: Postgres
+          type: object
+          properties:
+            version:
+              title: PostgreSQL Version
+              type: integer
+              default: 16
+              enum: [13, 14, 15, 16]
+              enumNames: ["13", "14", "15", "16"]
+            replicas:
+              title: Replicas
+              type: integer
+              default: 1
+              minimum: 1
+              maximum: 5
+            storageSize:
+              title: Storage Size
+              type: string
+              default: "10Gi"
+              pattern: "^[0-9]+(Mi|Gi|Ti)$"
+            storageClass:
+              title: Storage Class
+              type: string
+              default: ""
+            resources:
+              title: Resources
+              type: object
+              properties:
+                cpu:         { title: CPU Request,    type: string, default: "250m" }
+                memory:      { title: Memory Request, type: string, default: "512Mi" }
+                cpuLimit:    { title: CPU Limit,      type: string, default: "1" }
+                memoryLimit: { title: Memory Limit,   type: string, default: "2Gi" }
+            backups:
+              title: Backups
+              type: object
+              properties:
+                enabled:   { title: Enabled,             type: boolean, default: true }
+                schedule:  { title: Schedule (cron),     type: string,  default: "0 1 * * 0" }
+                retention: { title: Retention (count),   type: integer, default: 7, minimum: 1, maximum: 30 }
+
+    - title: Database Wiring
+      properties:
+        db:
+          title: Database Connection
+          type: object
+          description: Defines the postgres user/db that gets provisioned and how the credentials are exposed to the webapp container as env vars
+          properties:
+            user:
+              title: Username
+              type: string
+              pattern: "^[a-z][a-z0-9_]*$"
+              default: "app"
+            database:
+              title: Database
+              type: string
+              pattern: "^[a-z][a-z0-9_]*$"
+              default: "app"
+            envVars:
+              title: Connection Env Vars
+              type: array
+              description: Each entry maps a key on the Crunchy pguser secret onto an env var inside the webapp container
+              default:
+                - { name: DATABASE_URL, secretKey: uri }
+                - { name: DB_HOST,     secretKey: host }
+                - { name: DB_PORT,     secretKey: port }
+                - { name: DB_USER,     secretKey: user }
+                - { name: DB_PASSWORD, secretKey: password }
+                - { name: DB_NAME,     secretKey: dbname }
+              items:
+                type: object
+                required: [name, secretKey]
+                properties:
+                  name:
+                    title: Env Var Name
+                    type: string
+                    pattern: "^[A-Za-z_][A-Za-z0-9_]*$"
+                  secretKey:
+                    title: Secret Key
+                    type: string
+                    enum: [host, port, user, password, dbname, uri, jdbc-uri, verifier]
+
+  steps:
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-tenant.yaml
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-template.yaml
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/push-manifest.yaml
+
+  output:
+    text:
+      - title: Full Stack Created
+        content: |
+          Your Full Stack instance (webapp + postgres) is being created.

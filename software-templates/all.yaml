@@ -6,3 +6,6 @@ metadata:
 spec:
   targets:
     - ./tenant/template.yaml
+    - ./webapp/template.yaml
+    - ./postgres/template.yaml
+    - ./full-stack/template.yaml
