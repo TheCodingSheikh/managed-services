@@ -18,6 +18,11 @@ spec:
         - capsule-namespace-deleter
         {{- end }}
     {{- end }}
+    - name: system:serviceaccount:argo-cd:argocd-application-controller
+      kind: ServiceAccount
+      clusterRoles:
+        - admin
+        - capsule-namespace-deleter
   namespaceOptions:
     additionalMetadataList:
       - labels:
