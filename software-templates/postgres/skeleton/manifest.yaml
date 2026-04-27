@@ -30,29 +30,29 @@ metadata:
     app.kubernetes.io/instance: '${{ values.tenant }}-tenant-${{ values.params.name }}-postgres'
 spec:
   values:
-    tenant: ${{ values.tenant }}
-    name: ${{ values.params.name }}
+    tenant: "${{ values.tenant }}"
+    name: "${{ values.params.name }}"
     version: ${{ values.params.version }}
     replicas: ${{ values.params.replicas }}
-    storageSize: ${{ values.params.storageSize }}
-    storageClass: ${{ values.params.storageClass }}
+    storageSize: "${{ values.params.storageSize }}"
+    storageClass: "${{ values.params.storageClass }}"
     resources:
-      cpu: ${{ values.params.resources.cpu }}
-      memory: ${{ values.params.resources.memory }}
-      cpuLimit: ${{ values.params.resources.cpuLimit }}
-      memoryLimit: ${{ values.params.resources.memoryLimit }}
+      cpu: "${{ values.params.resources.cpu }}"
+      memory: "${{ values.params.resources.memory }}"
+      cpuLimit: "${{ values.params.resources.cpuLimit }}"
+      memoryLimit: "${{ values.params.resources.memoryLimit }}"
     backups:
       enabled: ${{ values.params.backups.enabled }}
-      schedule: ${{ values.params.backups.schedule }}
+      schedule: "${{ values.params.backups.schedule }}"
       retention: ${{ values.params.backups.retention }}
     {%- if values.params.users %}
     users:
       {%- for u in values.params.users %}
-      - name: ${{ u.name }}
+      - name: "${{ u.name }}"
         {%- if u.databases %}
         databases:
           {%- for db in u.databases %}
-          - ${{ db }}
+          - "${{ db }}"
           {%- endfor %}
         {%- endif %}
       {%- endfor %}

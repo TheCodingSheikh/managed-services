@@ -38,46 +38,46 @@ metadata:
     app.kubernetes.io/instance: '${{ values.tenant }}-tenant-${{ values.params.name }}-full-stack'
 spec:
   values:
-    tenant: ${{ values.tenant }}
-    name: ${{ values.params.name }}
+    tenant: "${{ values.tenant }}"
+    name: "${{ values.params.name }}"
     webapp:
-      image: ${{ values.params.webapp.image }}
+      image: "${{ values.params.webapp.image }}"
       replicas: ${{ values.params.webapp.replicas }}
       port: ${{ values.params.webapp.port }}
-      host: ${{ values.params.webapp.host }}
+      host: "${{ values.params.webapp.host }}"
       {%- if values.params.webapp.env %}
       env:
         {%- for e in values.params.webapp.env %}
-        - name: ${{ e.name }}
-          value: ${{ e.value }}
+        - name: "${{ e.name }}"
+          value: "${{ e.value }}"
         {%- endfor %}
       {%- endif %}
       resources:
-        cpu: ${{ values.params.webapp.resources.cpu }}
-        memory: ${{ values.params.webapp.resources.memory }}
-        cpuLimit: ${{ values.params.webapp.resources.cpuLimit }}
-        memoryLimit: ${{ values.params.webapp.resources.memoryLimit }}
+        cpu: "${{ values.params.webapp.resources.cpu }}"
+        memory: "${{ values.params.webapp.resources.memory }}"
+        cpuLimit: "${{ values.params.webapp.resources.cpuLimit }}"
+        memoryLimit: "${{ values.params.webapp.resources.memoryLimit }}"
     postgres:
       version: ${{ values.params.postgres.version }}
       replicas: ${{ values.params.postgres.replicas }}
-      storageSize: ${{ values.params.postgres.storageSize }}
-      storageClass: ${{ values.params.postgres.storageClass }}
+      storageSize: "${{ values.params.postgres.storageSize }}"
+      storageClass: "${{ values.params.postgres.storageClass }}"
       resources:
-        cpu: ${{ values.params.postgres.resources.cpu }}
-        memory: ${{ values.params.postgres.resources.memory }}
-        cpuLimit: ${{ values.params.postgres.resources.cpuLimit }}
-        memoryLimit: ${{ values.params.postgres.resources.memoryLimit }}
+        cpu: "${{ values.params.postgres.resources.cpu }}"
+        memory: "${{ values.params.postgres.resources.memory }}"
+        cpuLimit: "${{ values.params.postgres.resources.cpuLimit }}"
+        memoryLimit: "${{ values.params.postgres.resources.memoryLimit }}"
       backups:
         enabled: ${{ values.params.postgres.backups.enabled }}
-        schedule: ${{ values.params.postgres.backups.schedule }}
+        schedule: "${{ values.params.postgres.backups.schedule }}"
         retention: ${{ values.params.postgres.backups.retention }}
     db:
-      user: ${{ values.params.db.user }}
-      database: ${{ values.params.db.database }}
+      user: "${{ values.params.db.user }}"
+      database: "${{ values.params.db.database }}"
       {%- if values.params.db.envVars %}
       envVars:
         {%- for e in values.params.db.envVars %}
-        - name: ${{ e.name }}
-          secretKey: ${{ e.secretKey }}
+        - name: "${{ e.name }}"
+          secretKey: "${{ e.secretKey }}"
         {%- endfor %}
       {%- endif %}

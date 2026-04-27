@@ -39,7 +39,7 @@ spec:
           ui:options:
             watchField: name
             skipIfUnchanged: true
-            apiPath: proxy/k8s/managedservices.thecodingsheikh.io/v1alpha1/full-stacks
+            apiPath: proxy/k8s/managedservices.thecodingsheikh.io/v1alpha1/fullstacks
             jmesPath: "items[?metadata.name == '{{ value }}-full-stack']"
             errorMessage: "Full Stack '{{ value }}' is already in use"
 
