@@ -16,7 +16,7 @@ metadata:
     lab.backstage.io/links: |-
       [
         {
-          "url": "http://${{ values.tenant }}-tenant-${{ values.params.name }}-webapp.${{ values.tenant }}-tenant-webapp-${{ values.params.name }}.svc.cluster.local",
+          "url": "http://${{ values.tenant }}-tenant-${{ values.params.name }}-webapp.${{ values.tenant }}-tenant-${{ values.params.name }}-webapp.svc.cluster.local",
           "title": "Internal Service",
           "icon": "web"
         }{%- if values.params.host %},

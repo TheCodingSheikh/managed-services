@@ -17,7 +17,7 @@ metadata:
       [
         {%- for u in values.params.users %}
         {
-          "url": "postgresql://${{ values.tenant }}-tenant-${{ values.params.name }}-postgres-primary.${{ values.tenant }}-tenant-postgres-${{ values.params.name }}.svc.cluster.local:5432/${{ u.databases[0] }}",
+          "url": "postgresql://${{ values.tenant }}-tenant-${{ values.params.name }}-postgres-primary.${{ values.tenant }}-tenant-${{ values.params.name }}-postgres.svc.cluster.local:5432/${{ u.databases[0] }}",
           "title": "${{ u.name }} @ ${{ u.databases[0] }}",
           "icon": "storage"
         }{%- if not loop.last %},{%- endif %}

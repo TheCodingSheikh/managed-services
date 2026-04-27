@@ -16,13 +16,12 @@ metadata:
     lab.backstage.io/kubernetes-label-selector: 'app.kubernetes.io/instance=${{ values.tenant }}-tenant-${{ values.params.name }}-__SERVICE_NAME__'
     # TODO: optional — surface the running endpoint(s) in the Backstage entity.
     # YAML "|-" block style keeps the JSON readable; "{%- if ... %}" blocks add
-    # links conditionally. Service hosts are <release>.<namespace>.svc.cluster.local
-    # where release = <tenant>-tenant-<instance>-<service> and namespace =
-    # <tenant>-tenant-<service>-<instance> (note the swapped ordering).
+    # links conditionally. Service host = <release>.<namespace>.svc.cluster.local
+    # where release name AND namespace are both <tenant>-tenant-<instance>-<service>.
     # lab.backstage.io/links: |-
     #   [
     #     {
-    #       "url": "http://${{ values.tenant }}-tenant-${{ values.params.name }}-__SERVICE_NAME__.${{ values.tenant }}-tenant-__SERVICE_NAME__-${{ values.params.name }}.svc.cluster.local",
+    #       "url": "http://${{ values.tenant }}-tenant-${{ values.params.name }}-__SERVICE_NAME__.${{ values.tenant }}-tenant-${{ values.params.name }}-__SERVICE_NAME__.svc.cluster.local",
     #       "title": "Internal Service",
     #       "icon": "web"
     #     }

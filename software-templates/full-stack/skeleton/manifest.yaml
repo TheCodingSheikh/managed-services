@@ -16,7 +16,7 @@ metadata:
     lab.backstage.io/links: |-
       [
         {
-          "url": "http://${{ values.tenant }}-tenant-${{ values.params.name }}-full-stack-app.${{ values.tenant }}-tenant-full-stack-${{ values.params.name }}.svc.cluster.local",
+          "url": "http://${{ values.tenant }}-tenant-${{ values.params.name }}-full-stack-app.${{ values.tenant }}-tenant-${{ values.params.name }}-full-stack.svc.cluster.local",
           "title": "Webapp (internal)",
           "icon": "web"
         }{%- if values.params.webapp.host %},
@@ -26,7 +26,7 @@ metadata:
           "icon": "web"
         }{%- endif %},
         {
-          "url": "postgresql://${{ values.tenant }}-tenant-${{ values.params.name }}-full-stack-db-primary.${{ values.tenant }}-tenant-full-stack-${{ values.params.name }}.svc.cluster.local:5432/${{ values.params.db.database }}",
+          "url": "postgresql://${{ values.tenant }}-tenant-${{ values.params.name }}-full-stack-db-primary.${{ values.tenant }}-tenant-${{ values.params.name }}-full-stack.svc.cluster.local:5432/${{ values.params.db.database }}",
           "title": "Postgres (${{ values.params.db.user }} @ ${{ values.params.db.database }})",
           "icon": "storage"
         }
