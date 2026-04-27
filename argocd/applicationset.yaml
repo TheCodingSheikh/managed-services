@@ -40,7 +40,7 @@ spec:
           selfHeal: true
         managedNamespaceMetadata:
           labels:
-            capsule.clastix.io/tenant: "{{ .values.tenant }}"
+            capsule.clastix.io/tenant: "{{ .values.tenant }}-tenant"
         syncOptions:
           - CreateNamespace=true
   # Tenant manifests live at <tenant>/manifest.yaml        → len(segments) == 1
