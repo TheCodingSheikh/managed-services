@@ -7,3 +7,6 @@ input:
   values:
     params: ${{ parameters }}
     owners: ${{ steps.fetch-tenant.output.entity.spec.owners }}
+    # parameters.tenant comes from EntityPicker as "component:default/<short>-tenant".
+    # parseEntityRef → { kind, namespace, name="<short>-tenant" }; slice off the trailing "-tenant" (7 chars).
+    tenant: ${{ (parameters.tenant | parseEntityRef | pick('name')).slice(0, -7) }}

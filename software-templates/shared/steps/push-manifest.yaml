@@ -3,8 +3,9 @@ name: Push Manifest
 action: publish:github:pull-request
 input:
   repoUrl: github.com?owner=thecodingsheikh&repo=managed-services-releases
-  branchName: "create-${{ parameters.name }}-${{ parameters.serviceType }}-in-${{ parameters.tenant }}-tenant"
+  # Same parseEntityRef + slice trick as fetch-template — strips Backstage entity ref down to the short tenant name.
+  branchName: "create-${{ parameters.name }}-${{ parameters.serviceType }}-in-${{ (parameters.tenant | parseEntityRef | pick('name')).slice(0, -7) }}-tenant"
   sourcePath: ./output
-  targetPath: "${{ parameters.tenant }}/${{ parameters.serviceType }}/${{ parameters.name }}"
-  title: "create ${{ parameters.name }} ${{ parameters.serviceType }} in ${{ parameters.tenant }} tenant"
-  description: "create ${{ parameters.name }} ${{ parameters.serviceType }} in ${{ parameters.tenant }} tenant"
+  targetPath: "${{ (parameters.tenant | parseEntityRef | pick('name')).slice(0, -7) }}/${{ parameters.serviceType }}/${{ parameters.name }}"
+  title: "create ${{ parameters.name }} ${{ parameters.serviceType }} in ${{ (parameters.tenant | parseEntityRef | pick('name')).slice(0, -7) }} tenant"
+  description: "create ${{ parameters.name }} ${{ parameters.serviceType }} in ${{ (parameters.tenant | parseEntityRef | pick('name')).slice(0, -7) }} tenant"
