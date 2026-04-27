@@ -48,7 +48,7 @@ spec:
   templatePatch: |
     metadata:
       {{ if gt (len .path.segments) 1 }}
-      name: '{{ .values.tenant }}-tenant-{{ index .path.segments 1 }}-{{ .values.name }}'
+      name: '{{ .values.tenant }}-tenant-{{ .values.name }}-{{ index .path.segments 1 }}'
       {{ else }}
       name: '{{ .values.tenant }}-tenant'
       {{ end }}
@@ -57,7 +57,7 @@ spec:
       destination:
         name: in-cluster
         {{ if gt (len .path.segments) 1 }}
-        namespace: '{{ .values.tenant }}-tenant-{{ index .path.segments 1 }}-{{ .values.name }}'
+        namespace: '{{ .values.tenant }}-tenant-{{ .values.name }}-{{ index .path.segments 1 }}'
         {{ else }}
         namespace: '{{ .values.tenant }}-tenant'
         {{ end }}

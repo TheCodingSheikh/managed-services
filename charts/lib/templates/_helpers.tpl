@@ -39,7 +39,12 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/part-of: managed-services
 {{- end }}
 
-{{/* ArgoCD tracking annotation for Flux-managed resources. */}}
+{{/*
+ArgoCD tracking annotation for Flux-managed resources.
+Format: <app-name>:<group>/<kind>:<namespace>/<name>.
+- <app-name> must equal the ArgoCD Application name (set by argocd/applicationset.yaml = the destination namespace = .Release.Namespace).
+- <namespace>/<name> identifies the HelmRelease that bridges ArgoCD → Flux: it lives in .Release.Namespace and is named .Release.Name (the K8s CR name).
+*/}}
 {{- define "lib.argocdAnnotations" -}}
-argocd.argoproj.io/tracking-id: {{ .Release.Name }}:helm.toolkit.fluxcd.io/HelmRelease:{{ .Release.Name }}/{{ .Release.Namespace }}
+argocd.argoproj.io/tracking-id: {{ .Release.Namespace }}:helm.toolkit.fluxcd.io/HelmRelease:{{ .Release.Namespace }}/{{ .Release.Name }}
 {{- end }}
