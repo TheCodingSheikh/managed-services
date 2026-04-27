@@ -40,7 +40,7 @@ spec:
           selfHeal: true
         managedNamespaceMetadata:
           labels:
-            capsule.clastix.io/tenant: "{{ .values.tenant }}-tenant"
+            app.kubernetes.io/instance: placeholder
         syncOptions:
           - CreateNamespace=true
   # Tenant manifests live at <tenant>/manifest.yaml        → len(segments) == 1
@@ -54,6 +54,14 @@ spec:
       {{ end }}
       namespace: argo-cd
     spec:
+      syncPolicy:
+        managedNamespaceMetadata:
+          labels:
+            {{ if gt (len .path.segments) 1 }}
+            app.kubernetes.io/instance: '{{ .values.tenant }}-tenant-{{ .values.name }}-{{ index .path.segments 1 }}'
+            {{ else }}
+            app.kubernetes.io/instance: '{{ .values.tenant }}-tenant'
+            {{ end }}
       destination:
         name: in-cluster
         {{ if gt (len .path.segments) 1 }}
