@@ -33,6 +33,7 @@ metadata:
     backstage.io/last-applied-configuration: '${{ values.params | dump }}'
     backstage.io/scaffolder-template: template:default/full-stack
     backstage.io/immutable-fields: 'tenant,name'
+    backstage.io/scaffolder-edit-roles: 'admin,edit'
   label:
     app.kubernetes.io/instance: '${{ values.tenant }}-tenant-${{ values.params.name }}-full-stack'
 spec:

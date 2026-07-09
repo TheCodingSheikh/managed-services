@@ -1,0 +1,38 @@
+tenant: ""
+name: my-nuclio-function
+
+runtime: python:3.11
+handler: main:handler
+
+# Leave image empty to build from sourceCode below; set it to a repo:tag to
+# deploy a pre-built function image instead (build is then skipped).
+image: ""
+sourceCode: |
+  def handler(context, event):
+      context.logger.info("Hello from a managed Nuclio function")
+      return context.Response(
+          body="Hello, World!",
+          content_type="text/plain",
+          status_code=200,
+      )
+commands: []
+
+env: []
+
+# Autoscaling: minReplicas 0 => scale-to-zero (cold start on first request).
+minReplicas: 0
+maxReplicas: 4
+targetCPU: 75
+
+# HTTP trigger
+maxWorkers: 4
+host: ""
+
+# Optional cron trigger (empty => none)
+cronInterval: ""
+
+resources:
+  cpu: 100m
+  memory: 128Mi
+  cpuLimit: 500m
+  memoryLimit: 512Mi

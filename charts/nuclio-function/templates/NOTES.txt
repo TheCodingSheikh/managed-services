@@ -1,0 +1,2 @@
+
+Nuclio Function "{{ include "lib.fullname" . }}" deployed.

@@ -1,0 +1,73 @@
+apiVersion: nuclio.io/v1beta1
+kind: NuclioFunction
+metadata:
+  name: {{ include "lib.fullname" . }}
+  labels:
+    nuclio.io/project-name: default
+    {{- include "lib.labels" . | nindent 4 }}
+  annotations:
+    {{- include "lib.argocdAnnotations" . | nindent 4 }}
+spec:
+  description: {{ printf "Managed Nuclio function %s" .Values.name | quote }}
+  runtime: {{ .Values.runtime | quote }}
+  handler: {{ .Values.handler | quote }}
+  {{- if .Values.image }}
+  # Pre-built image: skip the build entirely.
+  image: {{ .Values.image | quote }}
+  {{- else }}
+  build:
+    functionSourceCode: {{ .Values.sourceCode | b64enc | quote }}
+    {{- with .Values.commands }}
+    commands:
+      {{- range . }}
+      - {{ . | quote }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+
+  # Autoscaling. minReplicas 0 => scale-to-zero, revived on demand by the DLX.
+  minReplicas: {{ .Values.minReplicas }}
+  maxReplicas: {{ .Values.maxReplicas }}
+  targetCPU: {{ .Values.targetCPU }}
+  serviceType: ClusterIP
+
+  {{- with .Values.env }}
+  env:
+    {{- range . }}
+    - name: {{ .name | quote }}
+      {{- if .valueFrom }}
+      valueFrom:
+        {{- toYaml .valueFrom | nindent 8 }}
+      {{- else }}
+      value: {{ .value | quote }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+
+  resources:
+    requests:
+      cpu: {{ .Values.resources.cpu | default "100m" | quote }}
+      memory: {{ .Values.resources.memory | default "128Mi" | quote }}
+    limits:
+      cpu: {{ .Values.resources.cpuLimit | default "500m" | quote }}
+      memory: {{ .Values.resources.memoryLimit | default "512Mi" | quote }}
+
+  triggers:
+    http:
+      kind: http
+      maxWorkers: {{ .Values.maxWorkers }}
+      attributes:
+        serviceType: ClusterIP
+        {{- with .Values.host }}
+        ingresses:
+          "0":
+            host: {{ . | quote }}
+            paths:
+              - /
+        {{- end }}
+    {{- with .Values.cronInterval }}
+    cron:
+      kind: cron
+      attributes:
+        interval: {{ . | quote }}
+    {{- end }}

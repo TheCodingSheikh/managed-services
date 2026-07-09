@@ -9,3 +9,4 @@ spec:
     - ./webapp/template.yaml
     - ./postgres/template.yaml
     - ./full-stack/template.yaml
+    - ./nuclio-function/template.yaml

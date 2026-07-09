@@ -1,0 +1,192 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: nuclio-function
+  title: Managed Nuclio Function
+  description: Create a managed Nuclio Function instance
+  tags:
+    - nuclio-function
+    - serverless
+    - kubernetes
+    - managed-service
+spec:
+  owner: platform-team
+  type: service
+
+  parameters:
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/parameters/tenant-selector.yaml
+
+    - title: Function
+      required:
+        - name
+        - runtime
+        - handler
+      properties:
+        serviceType:
+          type: string
+          default: nuclio-function
+          ui:widget: hidden
+        name:
+          title: Instance Name
+          type: string
+          description: Unique name (lowercase, alphanumeric with dashes)
+          pattern: "^[a-z][a-z0-9-]*$"
+          minLength: 1
+          maxLength: 63
+          ui:autofocus: true
+        nameValidator:
+          type: string
+          ui:field: ScaffolderFieldValidator
+          ui:options:
+            watchField: name
+            skipIfUnchanged: true
+            apiPath: proxy/k8s/managedservices.thecodingsheikh.io/v1alpha1/nucliofunctions
+            jmesPath: "items[?metadata.name == '{{ value }}-nuclio-function']"
+            errorMessage: "Nuclio Function '{{ value }}' is already in use"
+        runtime:
+          title: Runtime
+          type: string
+          description: Function language runtime
+          default: python:3.11
+          enum:
+            - python:3.9
+            - python:3.10
+            - python:3.11
+            - nodejs
+            - golang
+            - java
+            - dotnetcore
+            - ruby
+            - shell
+        handler:
+          title: Handler
+          type: string
+          description: "Entrypoint as module:function, e.g. main:handler"
+          default: main:handler
+          minLength: 1
+
+    - title: Code
+      properties:
+        image:
+          title: Pre-built Image
+          type: string
+          description: Optional. repo:tag of an existing function image. If set, the source below is ignored and no build runs.
+          default: ""
+        sourceCode:
+          title: Function Source
+          type: string
+          description: Inline source, built in-cluster and pushed to the registry. Used only when Pre-built Image is empty.
+          default: |
+            def handler(context, event):
+                context.logger.info("Hello from a managed Nuclio function")
+                return context.Response(
+                    body="Hello, World!",
+                    content_type="text/plain",
+                    status_code=200,
+                )
+          ui:widget: textarea
+          ui:options:
+            rows: 12
+        commands:
+          title: Build Commands
+          type: array
+          description: Commands run at build time, e.g. "pip install requests"
+          default: []
+          items:
+            type: string
+            minLength: 1
+
+    - title: Scaling & Triggers
+      properties:
+        minReplicas:
+          title: Min Replicas
+          type: integer
+          description: "0 enables scale-to-zero (cold start on first request)"
+          default: 0
+          minimum: 0
+          maximum: 100
+        maxReplicas:
+          title: Max Replicas
+          type: integer
+          default: 4
+          minimum: 1
+          maximum: 100
+        targetCPU:
+          title: Target CPU %
+          type: integer
+          description: CPU utilization that drives autoscaling
+          default: 75
+          minimum: 1
+          maximum: 100
+        maxWorkers:
+          title: HTTP Max Workers
+          type: integer
+          description: Concurrent workers per replica for the HTTP trigger
+          default: 4
+          minimum: 1
+          maximum: 100
+        host:
+          title: HTTP Ingress Hostname
+          type: string
+          description: Leave blank for cluster-internal only
+          default: ""
+        cronInterval:
+          title: Cron Interval
+          type: string
+          description: 'Optional. Adds a cron trigger, e.g. "30s", "5m", "1h"'
+          default: ""
+
+    - title: Environment
+      properties:
+        env:
+          title: Environment Variables
+          type: array
+          default: []
+          ui:options:
+            orderable: true
+          items:
+            type: object
+            required:
+              - name
+              - value
+            properties:
+              name:
+                title: Name
+                type: string
+                minLength: 1
+              value:
+                title: Value
+                type: string
+
+    - title: Resources
+      properties:
+        resources:
+          title: Resources
+          type: object
+          properties:
+            cpu:
+              title: CPU Request
+              type: string
+              default: "100m"
+            memory:
+              title: Memory Request
+              type: string
+              default: "128Mi"
+            cpuLimit:
+              title: CPU Limit
+              type: string
+              default: "500m"
+            memoryLimit:
+              title: Memory Limit
+              type: string
+              default: "512Mi"
+
+  steps:
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-template.yaml
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/push-manifest.yaml
+
+  output:
+    text:
+      - title: Nuclio Function Created
+        content: |
+          Your Nuclio Function instance is being created.

@@ -1,0 +1,143 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Nuclio Function Configuration",
+  "description": "Configuration for Managed Nuclio Function",
+  "type": "object",
+  "required": ["tenant", "name", "runtime", "handler"],
+  "properties": {
+    "tenant": {
+      "type": "string",
+      "description": "Owning tenant name",
+      "pattern": "^([a-z][a-z0-9-]*)?$",
+      "maxLength": 63
+    },
+    "name": {
+      "type": "string",
+      "description": "Nuclio Function instance name",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "minLength": 1,
+      "maxLength": 63
+    },
+    "runtime": {
+      "type": "string",
+      "description": "Function language runtime",
+      "enum": [
+        "python:3.9",
+        "python:3.10",
+        "python:3.11",
+        "nodejs",
+        "golang",
+        "java",
+        "dotnetcore",
+        "ruby",
+        "shell"
+      ],
+      "default": "python:3.11"
+    },
+    "handler": {
+      "type": "string",
+      "description": "Entrypoint, e.g. 'main:handler' (module:function)",
+      "minLength": 1,
+      "default": "main:handler"
+    },
+    "image": {
+      "type": "string",
+      "description": "Pre-built function image (repo:tag). If set, no build happens and sourceCode/commands are ignored.",
+      "default": ""
+    },
+    "sourceCode": {
+      "type": "string",
+      "description": "Inline function source code. Built in-cluster (kaniko) and pushed to the registry. Ignored when 'image' is set.",
+      "default": ""
+    },
+    "commands": {
+      "type": "array",
+      "description": "Build commands run before packaging (e.g. 'pip install requests'). Ignored when 'image' is set.",
+      "default": [],
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "env": {
+      "type": "array",
+      "description": "Environment variables. Each entry must set either value or valueFrom.",
+      "default": [],
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "value": { "type": "string" },
+          "valueFrom": {
+            "type": "object",
+            "properties": {
+              "secretKeyRef": {
+                "type": "object",
+                "required": ["name", "key"],
+                "properties": {
+                  "name": { "type": "string", "minLength": 1 },
+                  "key": { "type": "string", "minLength": 1 }
+                }
+              },
+              "configMapKeyRef": {
+                "type": "object",
+                "required": ["name", "key"],
+                "properties": {
+                  "name": { "type": "string", "minLength": 1 },
+                  "key": { "type": "string", "minLength": 1 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "minReplicas": {
+      "type": "integer",
+      "description": "Minimum replicas. 0 enables scale-to-zero (cold start on first request).",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0
+    },
+    "maxReplicas": {
+      "type": "integer",
+      "description": "Maximum replicas the autoscaler may scale up to.",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 4
+    },
+    "targetCPU": {
+      "type": "integer",
+      "description": "Target CPU utilization percentage that drives horizontal autoscaling.",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 75
+    },
+    "maxWorkers": {
+      "type": "integer",
+      "description": "Concurrent workers per replica for the HTTP trigger.",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 4
+    },
+    "host": {
+      "type": "string",
+      "description": "Ingress hostname for the HTTP trigger (omit for cluster-internal only).",
+      "default": ""
+    },
+    "cronInterval": {
+      "type": "string",
+      "description": "If set, adds a cron trigger firing on this interval (e.g. '30s', '5m', '1h').",
+      "default": ""
+    },
+    "resources": {
+      "type": "object",
+      "description": "Function pod resource requests and limits",
+      "default": {},
+      "properties": {
+        "cpu":         { "type": "string", "default": "100m" },
+        "memory":      { "type": "string", "default": "128Mi" },
+        "cpuLimit":    { "type": "string", "default": "500m" },
+        "memoryLimit": { "type": "string", "default": "512Mi" }
+      }
+    }
+  }
+}

@@ -1,0 +1,75 @@
+apiVersion: managedservices.thecodingsheikh.io/v1alpha1
+kind: NuclioFunction
+metadata:
+  name: "${{ values.tenant }}-tenant-${{ values.params.name }}-nuclio-function"
+  annotations:
+    # Backstage catalog discovery through Terasky kubernetes ingestor plugin
+    lab.backstage.io/add-to-catalog: "true"
+    lab.backstage.io/system-type: app
+    lab.backstage.io/component-type: service
+    lab.backstage.io/lifecycle: managed
+    lab.backstage.io/dependsOn: component:default/${{ values.tenant }}-tenant
+    lab.backstage.io/title: ${{ values.tenant | replace("-", " ") | title }} Tenant ${{ values.params.name | replace("-", " ") | title }} Nuclio Function
+    lab.backstage.io/name: ${{ values.tenant }}-tenant-${{ values.params.name }}-nuclio-function
+    lab.backstage.io/system: nuclio-function
+    lab.backstage.io/kubernetes-label-selector: 'app.kubernetes.io/instance=${{ values.tenant }}-tenant-${{ values.params.name }}-nuclio-function'
+    lab.backstage.io/links: |-
+      [
+        {
+          "url": "http://${{ values.tenant }}-tenant-${{ values.params.name }}-nuclio-function.${{ values.tenant }}-tenant-${{ values.params.name }}-nuclio-function.svc.cluster.local:8080",
+          "title": "Internal Service",
+          "icon": "web"
+        }{%- if values.params.host %},
+        {
+          "url": "https://${{ values.params.host }}",
+          "title": "Public Endpoint",
+          "icon": "web"
+        }{%- endif %}
+      ]
+    # Backstage entity scaffolder plugin
+    backstage.io/last-applied-configuration: '${{ values.params | dump }}'
+    backstage.io/scaffolder-template: template:default/nuclio-function
+    backstage.io/immutable-fields: 'tenant,name'
+    backstage.io/scaffolder-edit-roles: 'admin,edit'
+  label:
+    app.kubernetes.io/instance: '${{ values.tenant }}-tenant-${{ values.params.name }}-nuclio-function'
+spec:
+  values:
+    # ALWAYS use the `| quote` filter on string-typed substitutions so values
+    # like "1" don't get YAML-coerced to int and fail values.schema.json
+    # validation. Leave numbers/booleans bare (e.g. minReplicas: ${{ values.params.minReplicas }}).
+    # `values.tenant` is the resolved short tenant name (set by fetch-template.yaml);
+    # `values.params.tenant` is still the raw EntityPicker ref — don't use it here.
+    tenant: ${{ values.tenant | quote }}
+    name: ${{ values.params.name | quote }}
+    runtime: ${{ values.params.runtime | quote }}
+    handler: ${{ values.params.handler | quote }}
+    image: ${{ values.params.image | default("") | quote }}
+    {%- if not values.params.image %}
+    # dump encodes the (possibly multi-line) source as a single JSON string.
+    sourceCode: ${{ values.params.sourceCode | dump }}
+    {%- if values.params.commands %}
+    commands:
+      {%- for c in values.params.commands %}
+      - ${{ c | quote }}
+      {%- endfor %}
+    {%- endif %}
+    {%- endif %}
+    {%- if values.params.env %}
+    env:
+      {%- for e in values.params.env %}
+      - name: ${{ e.name | quote }}
+        value: ${{ e.value | quote }}
+      {%- endfor %}
+    {%- endif %}
+    minReplicas: ${{ values.params.minReplicas }}
+    maxReplicas: ${{ values.params.maxReplicas }}
+    targetCPU: ${{ values.params.targetCPU }}
+    maxWorkers: ${{ values.params.maxWorkers }}
+    host: ${{ values.params.host | default("") | quote }}
+    cronInterval: ${{ values.params.cronInterval | default("") | quote }}
+    resources:
+      cpu: ${{ values.params.resources.cpu | quote }}
+      memory: ${{ values.params.resources.memory | quote }}
+      cpuLimit: ${{ values.params.resources.cpuLimit | quote }}
+      memoryLimit: ${{ values.params.resources.memoryLimit | quote }}
