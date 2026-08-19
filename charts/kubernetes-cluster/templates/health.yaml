@@ -1,0 +1,68 @@
+{{- $name := include "kcluster.clusterName" . -}}
+{{- /*
+  No remediation.templateRef: CAPMOX ships no remediation template kind, so
+  remediation falls back to the owner — KubeadmControlPlane or the MachineSet —
+  which replaces the Machine outright.
+
+  Timeouts are long on purpose: a node stays Ready=False until Cilium lands on
+  it, and remediating on that races the CNI rollout into a rebuild loop.
+*/}}
+apiVersion: cluster.x-k8s.io/v1beta2
+kind: MachineHealthCheck
+metadata:
+  name: {{ $name }}-control-plane-unhealthy
+  labels:
+    {{- include "lib.labels" . | nindent 4 }}
+  annotations:
+    {{- include "lib.argocdAnnotations" . | nindent 4 }}
+spec:
+  clusterName: {{ $name }}
+  checks:
+    nodeStartupTimeoutSeconds: 1200
+    unhealthyNodeConditions:
+      - type: Ready
+        status: Unknown
+        timeoutSeconds: 600
+      - type: Ready
+        status: "False"
+        timeoutSeconds: 600
+  remediation:
+    triggerIf:
+      {{- /*
+        At 1 replica this has to be 100% or a single unhealthy node is already
+        100% unhealthy and nothing would ever be remediated. At 3 it drops to
+        34% so a correlated outage — a dead switch, a host reboot — cannot
+        delete the whole control plane at once.
+      */}}
+      unhealthyLessThanOrEqualTo: {{ ternary "34%" "100%" (.Values.controlPlane.highlyAvailable | default false) }}
+  selector:
+    matchLabels:
+      cluster.x-k8s.io/control-plane: ""
+{{- range $pool := .Values.nodePools }}
+---
+apiVersion: cluster.x-k8s.io/v1beta2
+kind: MachineHealthCheck
+metadata:
+  name: {{ $name }}-{{ $pool.name }}-unhealthy
+  labels:
+    {{- include "lib.labels" $ | nindent 4 }}
+  annotations:
+    {{- include "lib.argocdAnnotations" $ | nindent 4 }}
+spec:
+  clusterName: {{ $name }}
+  checks:
+    nodeStartupTimeoutSeconds: 900
+    unhealthyNodeConditions:
+      - type: Ready
+        status: Unknown
+        timeoutSeconds: 600
+      - type: Ready
+        status: "False"
+        timeoutSeconds: 600
+  remediation:
+    triggerIf:
+      unhealthyLessThanOrEqualTo: {{ ternary "50%" "100%" (gt (int $pool.replicas) 1) }}
+  selector:
+    matchLabels:
+      nodepool: {{ $name }}-{{ $pool.name }}
+{{- end }}

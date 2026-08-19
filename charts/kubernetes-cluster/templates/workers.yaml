@@ -1,0 +1,79 @@
+{{- $name := include "kcluster.clusterName" . -}}
+{{- $seen := dict -}}
+{{- range $pool := .Values.nodePools }}
+{{- if hasKey $seen $pool.name -}}
+{{- fail (printf "kubernetes-cluster: duplicate node pool name %q — pool names must be unique within a cluster" $pool.name) -}}
+{{- end -}}
+{{- $_ := set $seen $pool.name true -}}
+{{- $spec := include "kcluster.machineSpec" (dict "root" $ "sizing" $pool "role" $pool.name) -}}
+{{- /*
+  The revision covers the machine spec *and* the Kubernetes version, so both a
+  resize and an upgrade produce new object names and therefore a rollout. The
+  bootstrap template shares the revision so a change to it rolls the pool too.
+*/}}
+{{- $rev := include "kcluster.rev" (printf "%s|%s" $spec $.Values.version) -}}
+{{- $infraTmpl := printf "%s-%s-%s" $name $pool.name $rev -}}
+{{- $bootTmpl := printf "%s-%s-boot-%s" $name $pool.name $rev }}
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta2
+kind: KubeadmConfigTemplate
+metadata:
+  name: {{ $bootTmpl }}
+  labels:
+    {{- include "lib.labels" $ | nindent 4 }}
+  annotations:
+    {{- include "lib.argocdAnnotations" $ | nindent 4 }}
+spec:
+  template:
+    spec:
+      joinConfiguration:
+        nodeRegistration:
+          kubeletExtraArgs:
+            - name: provider-id
+              value: "proxmox://'{{ `{{ ds.meta_data.instance_id }}` }}'"
+---
+apiVersion: cluster.x-k8s.io/v1beta2
+kind: MachineDeployment
+metadata:
+  name: {{ $name }}-{{ $pool.name }}
+  labels:
+    {{- include "lib.labels" $ | nindent 4 }}
+    nodepool: {{ $name }}-{{ $pool.name }}
+  annotations:
+    {{- include "lib.argocdAnnotations" $ | nindent 4 }}
+spec:
+  clusterName: {{ $name }}
+  replicas: {{ $pool.replicas }}
+  selector:
+    matchLabels:
+      nodepool: {{ $name }}-{{ $pool.name }}
+  template:
+    metadata:
+      labels:
+        nodepool: {{ $name }}-{{ $pool.name }}
+    spec:
+      clusterName: {{ $name }}
+      version: {{ $.Values.version }}
+      bootstrap:
+        configRef:
+          apiGroup: bootstrap.cluster.x-k8s.io
+          kind: KubeadmConfigTemplate
+          name: {{ $bootTmpl }}
+      infrastructureRef:
+        apiGroup: infrastructure.cluster.x-k8s.io
+        kind: ProxmoxMachineTemplate
+        name: {{ $infraTmpl }}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+kind: ProxmoxMachineTemplate
+metadata:
+  name: {{ $infraTmpl }}
+  labels:
+    {{- include "lib.labels" $ | nindent 4 }}
+  annotations:
+    {{- include "lib.argocdAnnotations" $ | nindent 4 }}
+spec:
+  template:
+    spec:
+      {{- $spec | nindent 6 }}
+{{- end }}

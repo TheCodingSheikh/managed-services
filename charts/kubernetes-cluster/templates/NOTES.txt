@@ -1,0 +1,14 @@
+
+Kubernetes Cluster "{{ include "kcluster.clusterName" . }}" is being provisioned.
+
+  Version:       {{ .Values.version }} (image template {{ include "kcluster.templateID" . }})
+  Control plane: {{ ternary 3 1 (.Values.controlPlane.highlyAvailable | default false) }} node(s) @ {{ .Values.network.controlPlaneEndpoint }}
+  Node pools:    {{ range $i, $p := .Values.nodePools }}{{ if $i }}, {{ end }}{{ $p.name }}({{ $p.replicas }}){{ end }}
+
+Kubeconfig (available once the control plane has initialised):
+
+  kubectl -n {{ .Release.Namespace }} get secret {{ include "kcluster.clusterName" . }}-kubeconfig \
+    -o jsonpath='{.data.value}' | base64 -d > {{ include "kcluster.clusterName" . }}.kubeconfig
+
+  or from Vault:
+    tenant/{{ .Values.tenant }}/kubernetes-cluster/{{ .Values.name }}/kubeconfig

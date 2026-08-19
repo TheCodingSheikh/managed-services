@@ -10,3 +10,4 @@ spec:
     - ./postgres/template.yaml
     - ./full-stack/template.yaml
     - ./nuclio-function/template.yaml
+    - ./kubernetes-cluster/template.yaml

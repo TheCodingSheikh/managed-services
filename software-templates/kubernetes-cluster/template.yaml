@@ -1,0 +1,185 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: kubernetes-cluster
+  title: Managed Kubernetes Cluster
+  description: Create a managed Kubernetes cluster (Cluster API, kubeadm on Proxmox)
+  tags:
+    - kubernetes
+    - cluster-api
+    - managed-service
+spec:
+  owner: platform-team
+  type: service
+
+  parameters:
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/parameters/tenant-selector.yaml
+
+    - title: Cluster Configuration
+      required:
+        - name
+        - version
+      properties:
+        serviceType:
+          type: string
+          default: kubernetes-cluster
+          ui:widget: hidden
+        name:
+          title: Cluster Name
+          type: string
+          description: Unique name (lowercase, alphanumeric with dashes)
+          pattern: "^[a-z][a-z0-9-]*$"
+          minLength: 1
+          maxLength: 32
+          ui:autofocus: true
+        nameValidator:
+          type: string
+          ui:field: ScaffolderFieldValidator
+          ui:options:
+            watchField: name
+            skipIfUnchanged: true
+            apiPath: proxy/k8s/managedservices.thecodingsheikh.io/v1alpha1/kubernetesclusters
+            jmesPath: "items[?metadata.name == '{{ value }}-kubernetes-cluster']"
+            errorMessage: "Cluster '{{ value }}' is already in use"
+        version:
+          title: Kubernetes Version
+          type: string
+          description: >-
+            Pick the next version in the list. Kubernetes cannot skip a minor or
+            be downgraded, and this is not enforced for you — the control plane
+            and the workers both roll when you change it.
+          default: v1.34.10
+          enum:
+            - v1.34.10
+            - v1.35.6
+          enumNames:
+            - "1.34.10"
+            - "1.35.6"
+
+    - title: Control Plane
+      properties:
+        controlPlane:
+          title: Control Plane
+          type: object
+          properties:
+            highlyAvailable:
+              title: Highly available control plane
+              type: boolean
+              description: Runs 3 control plane nodes with stacked etcd instead of 1. Cannot be changed back to 1 safely once etcd has 3 members.
+              default: false
+            numCores:
+              title: CPU Cores
+              type: integer
+              default: 2
+              minimum: 1
+              maximum: 32
+            memoryMiB:
+              title: Memory (MiB)
+              type: integer
+              default: 4096
+              minimum: 2048
+              maximum: 131072
+            diskGb:
+              title: Disk (GB)
+              type: integer
+              default: 40
+              minimum: 20
+              maximum: 2048
+
+    - title: Node Pools
+      required:
+        - nodePools
+      properties:
+        nodePools:
+          title: Node Pools
+          type: array
+          description: >-
+            Each pool is a group of identical worker nodes. Changing a pool's
+            cores, memory or disk replaces its nodes one at a time; changing
+            only the node count scales in place without replacing anything.
+          minItems: 1
+          default:
+            - name: default
+              replicas: 2
+              numCores: 2
+              memoryMiB: 4096
+              diskGb: 40
+          items:
+            type: object
+            required:
+              - name
+              - replicas
+            properties:
+              name:
+                title: Pool Name
+                type: string
+                pattern: "^[a-z][a-z0-9-]*$"
+                minLength: 1
+                maxLength: 20
+              replicas:
+                title: Number of Nodes
+                type: integer
+                default: 2
+                minimum: 0
+                maximum: 50
+              numCores:
+                title: CPU Cores
+                type: integer
+                default: 2
+                minimum: 1
+                maximum: 32
+              memoryMiB:
+                title: Memory (MiB)
+                type: integer
+                default: 4096
+                minimum: 1024
+                maximum: 131072
+              diskGb:
+                title: Disk (GB)
+                type: integer
+                default: 40
+                minimum: 20
+                maximum: 2048
+
+    - title: Networking
+      required:
+        - network
+      properties:
+        network:
+          title: Addressing
+          type: object
+          required:
+            - controlPlaneEndpoint
+            - nodeAddresses
+          properties:
+            controlPlaneEndpoint:
+              title: API Server VIP
+              type: string
+              description: Virtual IP for the API server. Must be free, outside the DHCP scope, and not inside the node address ranges below.
+              pattern: "^([0-9]{1,3}\\.){3}[0-9]{1,3}$"
+            nodeAddresses:
+              title: Node Address Ranges
+              type: array
+              description: "Ranges this cluster's nodes draw from, e.g. 192.168.10.40-192.168.10.49. Must not overlap another cluster."
+              minItems: 1
+              default:
+                - 192.168.10.40-192.168.10.49
+              items:
+                type: string
+                minLength: 7
+
+  steps:
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/fetch-template.yaml
+    - $yaml: https://github.com/thecodingsheikh/managed-services/blob/main/software-templates/shared/steps/push-manifest.yaml
+
+  output:
+    text:
+      - title: Kubernetes Cluster Created
+        content: |
+          Your cluster is being provisioned. It takes a few minutes for the
+          control plane to come up and for the CNI to land on every node.
+
+          Fetch the kubeconfig once the control plane is ready:
+
+              kubectl -n ${{ (parameters.tenant | parseEntityRef | pick('name')).slice(0, -7) }}-tenant-${{ parameters.name }}-kubernetes-cluster \
+                get secret ${{ parameters.name }}-kubeconfig -o jsonpath='{.data.value}' | base64 -d

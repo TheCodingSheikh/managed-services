@@ -1,0 +1,55 @@
+tenant: ""
+name: my-cluster
+
+version: v1.34.10
+
+controlPlane:
+  highlyAvailable: false
+  numCores: 2
+  memoryMiB: 4096
+  diskGb: 40
+
+nodePools:
+  - name: default
+    replicas: 2
+    numCores: 2
+    memoryMiB: 4096
+    diskGb: 40
+
+network:
+  controlPlaneEndpoint: 192.168.10.40
+  nodeAddresses:
+    - 192.168.10.41-192.168.10.49
+  podCIDR: 10.244.0.0/16
+  serviceCIDR: 10.96.0.0/12
+
+# Version → image. This is the link between the Kubernetes version a user picks
+# and the Proxmox template that has that version baked in, and it is the only
+# place a new version is enabled. templateID values come from the image-builder
+# Jobs (one Job per version, each with its own VMID).
+#
+# The version also feeds the machine-template revision hash, so a version change
+# produces new template names and therefore a rollout — see _helpers.tpl.
+images:
+  v1.34.10:
+    templateID: 9001
+  v1.35.6:
+    templateID: 9003
+
+infra:
+  sourceNode: pve
+  allowedNodes:
+    - pve
+  storage: bulk
+  bridge: vmbr0
+  gateway: 192.168.10.1
+  prefix: 24
+  dnsServers:
+    - 192.168.10.2
+  region: home
+
+addons:
+  cilium: 1.20.0
+  ccm: 0.2.30
+  csi: 0.5.10
+  kubeVip: v1.2.3

@@ -1,0 +1,64 @@
+{{- $name := include "kcluster.clusterName" . -}}
+apiVersion: cluster.x-k8s.io/v1beta2
+kind: Cluster
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "lib.labels" . | nindent 4 }}
+    {{- /* Addons and the credential ClusterResourceSet select on this. */}}
+    cluster.x-k8s.io/cluster-name: {{ $name }}
+  annotations:
+    {{- include "lib.argocdAnnotations" . | nindent 4 }}
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+        - {{ .Values.network.podCIDR | default "10.244.0.0/16" }}
+    services:
+      cidrBlocks:
+        - {{ .Values.network.serviceCIDR | default "10.96.0.0/12" }}
+  controlPlaneRef:
+    apiGroup: controlplane.cluster.x-k8s.io
+    kind: KubeadmControlPlane
+    name: {{ $name }}-control-plane
+  infrastructureRef:
+    apiGroup: infrastructure.cluster.x-k8s.io
+    kind: ProxmoxCluster
+    name: {{ $name }}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+kind: ProxmoxCluster
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "lib.labels" . | nindent 4 }}
+  annotations:
+    {{- include "lib.argocdAnnotations" . | nindent 4 }}
+spec:
+  {{- /*
+    Held by the kube-vip static pod on the control plane nodes — there is no
+    load balancer in Proxmox. Must be outside the DHCP scope and outside every
+    nodeAddresses range.
+  */}}
+  controlPlaneEndpoint:
+    host: {{ .Values.network.controlPlaneEndpoint }}
+    port: 6443
+  {{- /*
+    Required by CRD validation: CAPMOX has no DHCP path, so node addresses are
+    named here. Ranges must not overlap another cluster on the same LAN.
+  */}}
+  ipv4Config:
+    addresses:
+      {{- range .Values.network.nodeAddresses }}
+      - {{ . | quote }}
+      {{- end }}
+    prefix: {{ .Values.infra.prefix }}
+    gateway: {{ .Values.infra.gateway }}
+  dnsServers:
+    {{- range .Values.infra.dnsServers }}
+    - {{ . | quote }}
+    {{- end }}
+  allowedNodes:
+    {{- range .Values.infra.allowedNodes }}
+    - {{ . | quote }}
+    {{- end }}

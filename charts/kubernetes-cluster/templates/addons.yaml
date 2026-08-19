@@ -1,0 +1,99 @@
+{{- $name := include "kcluster.clusterName" . -}}
+{{- /*
+  Every cluster gets a CNI and the Proxmox cloud provider automatically — a
+  cluster without them never reaches Ready, so they are not a user choice.
+  Delivered by CAAPH, which installs into the workload cluster once it is up.
+*/}}
+apiVersion: addons.cluster.x-k8s.io/v1alpha1
+kind: HelmChartProxy
+metadata:
+  name: {{ $name }}-cilium
+  labels:
+    {{- include "lib.labels" . | nindent 4 }}
+  annotations:
+    {{- include "lib.argocdAnnotations" . | nindent 4 }}
+spec:
+  clusterSelector:
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: {{ $name }}
+  repoURL: https://helm.cilium.io/
+  chartName: cilium
+  version: {{ .Values.addons.cilium }}
+  namespace: kube-system
+  releaseName: cilium
+  valuesTemplate: |
+    ipam:
+      mode: kubernetes
+    routingMode: tunnel
+    tunnelProtocol: vxlan
+    operator:
+      replicas: 1
+    encryption:
+      enabled: true
+      type: wireguard
+---
+apiVersion: addons.cluster.x-k8s.io/v1alpha1
+kind: HelmChartProxy
+metadata:
+  name: {{ $name }}-ccm
+  labels:
+    {{- include "lib.labels" . | nindent 4 }}
+  annotations:
+    {{- include "lib.argocdAnnotations" . | nindent 4 }}
+spec:
+  clusterSelector:
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: {{ $name }}
+  repoURL: oci://ghcr.io/sergelogvinov/charts
+  chartName: proxmox-cloud-controller-manager
+  version: {{ .Values.addons.ccm }}
+  namespace: kube-system
+  releaseName: proxmox-ccm
+  valuesTemplate: |
+    existingConfigSecret: proxmox-cloud-config
+    existingConfigSecretKey: config.yaml
+
+    # DaemonSet means hostNetwork, so the CCM reaches the Proxmox API without
+    # the CNI. A Deployment on the pod network deadlocks on a cold cluster:
+    # Cilium waits on node init, node init waits on the CCM.
+    useDaemonSet: true
+
+    nodeSelector:
+      node-role.kubernetes.io/control-plane: ""
+---
+apiVersion: addons.cluster.x-k8s.io/v1alpha1
+kind: HelmChartProxy
+metadata:
+  name: {{ $name }}-csi
+  labels:
+    {{- include "lib.labels" . | nindent 4 }}
+  annotations:
+    {{- include "lib.argocdAnnotations" . | nindent 4 }}
+spec:
+  clusterSelector:
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: {{ $name }}
+  repoURL: oci://ghcr.io/sergelogvinov/charts
+  chartName: proxmox-csi-plugin
+  version: {{ .Values.addons.csi }}
+  namespace: kube-system
+  releaseName: proxmox-csi
+  valuesTemplate: |
+    # Must equal `region` in the config secret and the CCM's node label — three
+    # places, one value, no validation.
+    clusterID: {{ .Values.infra.region }}
+
+    existingConfigSecret: proxmox-cloud-config
+    existingConfigSecretKey: config.yaml
+
+    node:
+      tolerations:
+        - operator: Exists
+
+    storageClass:
+      - name: proxmox-{{ .Values.infra.storage }}
+        storage: {{ .Values.infra.storage }}
+        fstype: ext4
+        reclaimPolicy: Delete
+        annotations:
+          storageclass.kubernetes.io/is-default-class: "true"
