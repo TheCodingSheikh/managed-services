@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: managed-services-releases
-  namespace: argo-cd
+  namespace: argocd
 spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=default"]
@@ -23,7 +23,7 @@ spec:
   template:
     metadata:
       name: placeholder
-      namespace: argo-cd
+      namespace: argocd
     spec:
       project: managed-services
       source:
@@ -52,7 +52,7 @@ spec:
       {{ else }}
       name: '{{ .values.tenant }}-tenant'
       {{ end }}
-      namespace: argo-cd
+      namespace: argocd
     spec:
       syncPolicy:
         managedNamespaceMetadata:
