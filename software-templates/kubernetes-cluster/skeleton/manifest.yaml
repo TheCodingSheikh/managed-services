@@ -28,9 +28,9 @@ metadata:
     app.kubernetes.io/instance: '${{ values.tenant }}-tenant-${{ values.params.name }}-kubernetes-cluster'
 spec:
   values:
-    tenant: ${{ values.tenant | quote }}
-    name: ${{ values.params.name | quote }}
-    version: ${{ values.params.version | quote }}
+    tenant: "${{ values.tenant }}"
+    name: "${{ values.params.name }}"
+    version: "${{ values.params.version }}"
     controlPlane:
       highlyAvailable: ${{ values.params.controlPlane.highlyAvailable }}
       numCores: ${{ values.params.controlPlane.numCores }}
@@ -39,7 +39,7 @@ spec:
     {%- if values.params.nodePools %}
     nodePools:
       {%- for p in values.params.nodePools %}
-      - name: ${{ p.name | quote }}
+      - name: "${{ p.name }}"
         replicas: ${{ p.replicas }}
         numCores: ${{ p.numCores }}
         memoryMiB: ${{ p.memoryMiB }}
@@ -47,10 +47,10 @@ spec:
       {%- endfor %}
     {%- endif %}
     network:
-      controlPlaneEndpoint: ${{ values.params.network.controlPlaneEndpoint | quote }}
+      controlPlaneEndpoint: "${{ values.params.network.controlPlaneEndpoint }}"
       {%- if values.params.network.nodeAddresses %}
       nodeAddresses:
         {%- for r in values.params.network.nodeAddresses %}
-        - ${{ r | quote }}
+        - "${{ r }}"
         {%- endfor %}
       {%- endif %}
