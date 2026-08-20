@@ -12,8 +12,8 @@ Subject may be "user:<n>", "group:<n>", "group:<path>/<n>", or a bare name
 
 {{- define "lib.keycloakRBAC" -}}
 {{- $clients := dict
-    "argocd" "lab-argo-cd-client"
-    "vault"  "lab-vault-client"
+    "argocd" "home-argo-cd-client"
+    "vault"  "home-vault-client"
 }}
 {{- range $system, $clientRef := $clients }}
 {{- range $role := list "admin" "edit" "view" }}
@@ -29,7 +29,7 @@ spec:
   forProvider:
     name: {{ $roleName }}
     clientIdRef: {name: {{ $clientRef }}}
-    realmIdRef: {name: lab-realm}
+    realmIdRef: {name: home-realm}
   providerConfigRef: {name: keycloak-provider-config}
 {{- end }}
 {{- end }}
@@ -47,11 +47,11 @@ metadata:
 spec:
   forProvider:
     exhaustive: false
-    realmIdRef: {name: lab-realm}
+    realmIdRef: {name: home-realm}
     roleIdsRefs:
       - name: {{ $.Release.Name }}-{{ $system }}-{{ $owner.role }}
     {{ $kind }}IdRef:
-      name: lab-{{ $name }}-{{ $kind }}
+      name: home-{{ $name }}-{{ $kind }}
   providerConfigRef: {name: keycloak-provider-config}
 {{- end }}
 {{- end }}
